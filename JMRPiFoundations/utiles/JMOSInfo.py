@@ -27,9 +27,9 @@
 # Author: Kunpeng Zhang
 # 2018.5.31
 #
+# See LICENSE.rst for details.
 
 import subprocess
-from subprocess import check_output
 import re
 
 class JMOSInfo:
@@ -39,28 +39,31 @@ class JMOSInfo:
         out,error = cmd.communicate() 
         return out.splitlines()
 
-    def bytes2Human(self, n):
+    def bytesUnit2HM(self, n):
         """
             bytes2Unit(10000) => '9K'
             bytes2Unit(100001221) => '95M'
-            from LUMA libs
         """
-        symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
-        prefix = {}
-        for i, s in enumerate(symbols):
-            prefix[s] = 1 << (i + 1) * 10
-        for s in reversed(symbols):
-            if n >= prefix[s]:
-                value = int(float(n) / prefix[s])
-                return '%s%s' % (value, s)
+
+        unitSymbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+        pfix = {}
+        for i, s in enumerate(unitSymbols):
+            pfix[s] = 1 << (i + 1) * 10
+
+        for s in reversed(unitSymbols):
+            if n >= pfix[s]:
+                val = int(float(n) / pfix[s])
+                return '%s%s' % (val, s)
+
         return "%sB" % n
 
     def getMemUsage(self):
         memory = self._cmd(['free'])
 
-        cols = re.sub(r'(( )+|(\n)+)', " ", memory[1])
-        cols = re.sub("(.*\:)", "", cols)
-        cols = re.sub("\A\s+", "", cols)
+        cols = re.sub(r"(( )+|(\n)+)", " ", str(memory[1]))
+        cols = re.sub(r'((b\')|(\\t)|(\'))', "", str(cols))
+        cols = re.sub("(.*\:)", "", str(cols))
+        cols = re.sub("\A\s+", "", str(cols))
         usage = cols.split(' ')
         return {
                  "total": int(usage[0]),
@@ -75,9 +78,10 @@ class JMOSInfo:
     def getDiskUsage(self, dir ):
         disk = self._cmd(['df', dir])
     
-        cols = re.sub(r'(( )+|(\n)+)', " ", disk[1])
-        cols = re.sub("(.*\:)", "", cols)
-        cols = re.sub("\A\s+", "", cols)
+        cols = re.sub(r'(( )+|(\n)+)', " ", str(disk[1]))
+        cols = re.sub(r'((b\')|(\\t)|(\'))', "", str(cols))
+        cols = re.sub("(.*\:)", "", str(cols))
+        cols = re.sub("\A\s+", "", str(cols))
         usage = cols.split(' ')
         return { "total":int(usage[1]),
                  "used": int(usage[2]),
@@ -85,31 +89,36 @@ class JMOSInfo:
                  "usage": float(usage[4].replace("%", "")) / 100, 
                  "mounted":usage[5]
                  }
-    
+
     def getCPUInfo(self):
         cpu_count = self._cmd( ["grep","-c", "^processor", "/proc/cpuinfo"] )[0]
         cpu_info = self._cmd( ["cat", "/proc/cpuinfo", "|", "uniq"] )
         result = {"processor": int(cpu_count)}
         for i in cpu_info:
-            item = re.sub(r'((\t)+|(\n)+)', "", i)
+            item = re.sub(r'((\t)+|(\n)+)', "", str(i))
+            item = re.sub(r'((b\')|(\\t)|(\'))', "", str(item))
             info = item.split(': ')
             try:
                 if info[0] != "processor": result[info[0].replace(" ", "_").lower()] = info[1]
             except:
                 continue
         return result
-        
+
     def getCPUsage(self):
         cpu = self._cmd(["grep", "cpu", "/proc/stat" ])
-
-        cols = re.sub(r'(( )+|(\n)+)', " ", cpu[0])
-        cols = re.sub("\A\s+", "", cols)
+        cols = re.sub(r'(( )+|(\n)+)', " ", str(cpu[0]))
+        cols = re.sub(r'((b\')|(\\t)|(\'))', "", str(cols))
+        cols = re.sub(r"\A\s+", "", str(cols))
         usage = cols.split(' ')
         return ( float(usage[1]) + float(usage[3]) ) / ( float(usage[1]) + float(usage[3]) + float(usage[4]) )
-    
+
     def getIPAddr(self):
-        ips = check_output(['hostname', '--all-ip-addresses'])
-        return ips.strip().split(' ')
+        ips = self._cmd(['hostname', '--all-ip-addresses'])
+        cols = re.sub(r"(( )+|(\n)+)", " ", str(ips[0]))
+        cols = re.sub("\A\s+", "", str(cols))
+        cols = re.sub("((b')|( ')+)", "", str(cols))
+        return cols.strip().split(' ')
+
 
 if __name__ == "__main__":
     myOS = JMOSInfo()
@@ -127,5 +136,4 @@ if __name__ == "__main__":
     print(myOS.getIPAddr())
     
     print(disk["total"])
-    print( myOS.bytes2Human(disk["total"] * 1024) )
-    
+    print( myOS.bytesUnit2HM(disk["total"] * 1024) )

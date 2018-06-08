@@ -38,7 +38,7 @@ desc = 'The Raspberry Pi Spark Shield board allows you to easily develop interes
 
 setup (
 	name              = 'JMRPi.Spark.Foundations',
-	version           = '1.0.0',
+	version           = '1.0.1',
 	author            = 'Kunpeng Zhang',
 	author_email      = 'kenz@mobinrg.com',
 	description       = desc,

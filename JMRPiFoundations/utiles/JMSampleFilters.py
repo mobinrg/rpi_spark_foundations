@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 #
 
-from JMMovingAvg import JMMovingAvg
+from .JMMovingAvg import JMMovingAvg
 
 ###########################################
 # Sample 3 axis moving average filter
