@@ -36,7 +36,7 @@
 # v1.1.0
 #
 
-class JMRPiSparkConfig:
+class RPiSparkConfig:
 
     ########################################################################
     # Display PINs  SPI_0

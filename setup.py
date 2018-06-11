@@ -38,7 +38,7 @@ desc = 'The Raspberry Pi Spark Shield board allows you to easily develop interes
 
 setup (
 	name              = 'JMRPi.Spark.Foundations',
-	version           = '1.0.1',
+	version           = '1.0.2',
 	author            = 'Kunpeng Zhang',
 	author_email      = 'kenz@mobinrg.com',
 	description       = desc,
@@ -49,6 +49,6 @@ setup (
 	keywords			= keywords,
 	url               = 'https://github.com/PowerRocker/rpi_spark_foundation',
 	dependency_links  = [],
-	install_requires  = ["JMRPi.Spark"],
+# 	install_requires  = ["JMRPi.Spark"],
 	packages          = find_packages()
 )

@@ -23,12 +23,12 @@
 # THE SOFTWARE.
 #
 
-from .JMMovingAvg import JMMovingAvg
+from .AvgCalculators import MovingAvgCalculator
 
 ###########################################
 # Sample 3 axis moving average filter
 #
-class JMSample3AxisMAFilter:
+class Sample3AxisMAFilter:
     _count = 0
     maX = None
     maY = None
@@ -40,9 +40,9 @@ class JMSample3AxisMAFilter:
 
     def __init__(self, count = 15):
         self._count = count
-        self.maX = JMMovingAvg(count)
-        self.maY = JMMovingAvg(count)
-        self.maZ = JMMovingAvg(count)
+        self.maX = MovingAvgCalculator(count)
+        self.maY = MovingAvgCalculator(count)
+        self.maZ = MovingAvgCalculator(count)
         
     def clear(self):
         self.accelMA_X.clear(self._count)
@@ -62,14 +62,14 @@ class JMSample3AxisMAFilter:
 ###########################################
 # Filter base
 #
-class JMSampleFilter:
+class SampleFilter:
     value = 0.0
     def addSampleValue(self, newValue): raise "Did not implement this method"
 
 ###########################################
 # Low-pass_filter
 # See http://en.wikipedia.org/wiki/Low-pass_filter for details low pass filtering
-class JMLowFilter(JMSampleFilter):
+class LowFilter(SampleFilter):
     _filterConstant = 0.0
 
     def __init__(self, rate, cutoffFreq):
@@ -84,7 +84,7 @@ class JMLowFilter(JMSampleFilter):
 ###########################################
 # High-pass_filter
 # See http://en.wikipedia.org/wiki/High-pass_filter for details on high pass filtering
-class JMHighFilter(JMSampleFilter):
+class HighFilter(SampleFilter):
     _filterConstant = 0.0
     _lastSampleVal = 0.0
 

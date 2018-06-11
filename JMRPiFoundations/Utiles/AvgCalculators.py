@@ -27,7 +27,7 @@
 #    Moving Average
 #    2018.4.01
 # 
-class JMMovingAvg:
+class MovingAvgCalculator:
     _list = None
     _lastSum = 0
     count = 0
@@ -58,7 +58,7 @@ class JMMovingAvg:
 #    Moving Average 2
 #    2018.4.01
 # 
-class JMAvgCalc:
+class AvgCalculator:
     _maxValue = 0
     _minValue = 0
     _avgSumValue = 0
@@ -92,7 +92,7 @@ class JMAvgCalc:
 
 
 if __name__ == "__main__":
-    ma = JMMovingAvg(5)
+    ma = MovingAvgCalculator(5)
     
     print ("Num" , " \t " , "MA")
     print ("----" , " \t " , "----")
@@ -104,7 +104,7 @@ if __name__ == "__main__":
             print (n , " \t " , "N/A")
             
     print ("")
-    ac = JMAvgCalc(5)
+    ac = AvgCalculator(5)
     print ("Num" , " \t " , "MA")
     print ("----" , " \t " , "----")
     for n in range(1,20):

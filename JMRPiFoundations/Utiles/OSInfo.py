@@ -32,7 +32,7 @@
 import subprocess
 import re
 
-class JMOSInfo:
+class OSInfo:
 
     def _cmd(self, cmdParams):
         cmd = subprocess.Popen( cmdParams, stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
@@ -121,7 +121,7 @@ class JMOSInfo:
 
 
 if __name__ == "__main__":
-    myOS = JMOSInfo()
+    myOS = OSInfo()
 
     disk = myOS.getDiskUsage("/") 
     print("\nDisk")

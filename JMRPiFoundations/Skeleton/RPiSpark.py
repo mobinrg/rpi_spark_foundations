@@ -25,7 +25,7 @@
 # #########################################################
 #
 
-class JMRPiSpark:
+class RPiSpark:
     __version__ = ""
     Screen = None
     Keyboard = None
@@ -37,10 +37,10 @@ class JMRPiSpark:
         """ Init a RPiSpark object instance 
             version -- HW Version (string)
             screen -- OLED / LCD / Other object instance ( None, SSPILScreen or Other )
-            keyboard -- Key buttons object instance ( None, SSKeyButtons or Other )
+            keyboard -- Key buttons object instance ( None, RPiKeyButtons or Other )
             attitude -- Attitude sensor object instance ( None, MPU6050 or Other )
-            audio -- Audio controller object instance ( None, SSAudioDevice or Other )
-            tone -- Tone player object instance ( None, JMRPiTonePlayer or Other )
+            audio -- Audio controller object instance ( None, RPiAudioDevice or Other )
+            tone -- Tone player object instance ( None, RPiTonePlayer or Other )
         """
 
         self.__version__ = version

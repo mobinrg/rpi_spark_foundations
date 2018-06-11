@@ -32,7 +32,7 @@
 
 from time import sleep
 
-class SparkModuleBase:
+class RPiSparkModule:
     _RPiSparkConfig = None
     _RPiSpark = None
 
