@@ -29,13 +29,13 @@
 # 
 class MovingAvgCalculator:
     _list = None
-    _lastSum = 0
-    count = 0
-    lastMA = 0
+    _lastSum = None
+    count = None
+    lastMA = None
 
     def __init__(self, count = 15):
         self.count = count
-        self._list = []
+        self.clear()
 
     def clear(self):
         self._lastSum = 0
@@ -59,27 +59,27 @@ class MovingAvgCalculator:
 #    2018.4.01
 # 
 class AvgCalculator:
-    _maxValue = 0
-    _minValue = 0
-    _avgSumValue = 0
-    _valueCount = 0
-    count = 0
-    lastAvgValue = 0
-    
+    _maxValue = None
+    _minValue = None
+    _avgSumValue = None
+    _valueCount = None
+    count = None
+    lastAvgValue = None
+
     def __init__(self, count = 15):
+        self.count = count
         self._maxValue = 0
         self._minValue = 0
         self._avgSumValue = 0
         self._valueCount = 0
-        self.count = count
         self.lastAvgValue = 0
-    
+
     def addValue(self, newValue):
         if newValue > self._maxValue: self._maxValue = newValue
         if newValue < self._minValue: self._minValue = newValue
         self._avgSumValue += newValue
         self._valueCount += 1
-        
+
         if self._valueCount >= self.count :
             self.lastAvgValue = (self._avgSumValue - self._maxValue - self._minValue) / (self._valueCount - 2)
             self._maxValue = 0
@@ -87,29 +87,32 @@ class AvgCalculator:
             self._avgSumValue = 0
             self._valueCount = 0
             return self.lastAvgValue
-    
+
         return None
 
 
 if __name__ == "__main__":
     ma = MovingAvgCalculator(5)
-    
-    print ("Num" , " \t " , "MA")
-    print ("----" , " \t " , "----")
+    item_str1 = "%(in)d\t%(ma)d"
+    item_str2 = "%(in)d\t%(ma)s"
+    print("MovingAvgCalculator")
+    print("NUM\tMA")
+    print("----\t----")
     for n in range(1,15):
         newAvg = ma.addValue(n)
         if newAvg != None:
-            print (n , " \t " , newAvg)
+            print(item_str1 % {"in":n, "ma":newAvg})
         else:
-            print (n , " \t " , "N/A")
+            print(item_str2 % {"in":n, "ma":"N/A"})
             
-    print ("")
+    print("")
     ac = AvgCalculator(5)
-    print ("Num" , " \t " , "MA")
-    print ("----" , " \t " , "----")
-    for n in range(1,20):
+    print("AvgCalculator")
+    print("NUM\tMA")
+    print("----\t----")
+    for n in range(1, 30):
         newAvg = ac.addValue(n)
         if newAvg != None:
-            print (n , " \t " , newAvg)
+            print(item_str1 % {"in":n, "ma":newAvg})
         else:
-            print (n , " \t " , "N/A")
+            print(item_str2 % {"in":n, "ma":"N/A"})

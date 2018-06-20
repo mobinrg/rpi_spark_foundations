@@ -37,11 +37,15 @@
 #
 
 class RPiSparkConfig:
+    # #######################################################################
+    # Hardware version
 
-    ########################################################################
+    HW_VERSION      = "RPi_SPARK_Z_1.0.0"
+
+    # #######################################################################
     # Display PINs  SPI_0
     # SSD1306 OLED 128x64
-    #
+
     DSP_RESET       = None
     DSP_DC          = 9  #use MISO for DC
     DSP_SPI_PORT    = 0
@@ -64,7 +68,7 @@ class RPiSparkConfig:
     ATTITUDE_SENSOR_ADDR = 0x68
     ATTITUDE_INT    = 25
 
-    ########################################################################
+    # #######################################################################
     # Keyboard include Joystick buttons and Action buttons, 
     # keyboard use BCM mode, there are keyboard layout:
     # 
@@ -73,6 +77,7 @@ class RPiSparkConfig:
     #             [JOY DOWN]                                  [ACT_X]
     #
     # Action Buttons    BCM_IO_NUM
+
     BUTTON_ACT_A        = 22
     BUTTON_ACT_B        = 23
     # BUTTON_ACT_X        = None
@@ -85,12 +90,19 @@ class RPiSparkConfig:
     BUTTON_JOY_DOWN     = 6
     BUTTON_JOY_OK       = 24
  
-    ########################################################################
+    # #######################################################################
     # Audio PINs
     # PWM - Audio
     # GPIO12 - set mode ALT0
     # GPIO13 - set mode ALT0
+
     AUDIO_L = 12
     AUDIO_R = 13
     SPEAKER = 12
 
+    # #######################################################################
+    # Available IOs
+    # Physical numbers and BCM Number
+
+    PHY_IO_AVAILABLE = [7,8,10,11,12,26,27,28,35,36,38,40]
+    BCM_IO_AVAILABLE = [4,14,15,17,18,7,0,1,19,16,20,21]

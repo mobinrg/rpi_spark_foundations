@@ -29,7 +29,7 @@ from .AvgCalculators import MovingAvgCalculator
 # Sample 3 axis moving average filter
 #
 class Sample3AxisMAFilter:
-    _count = 0
+    _count = None
     maX = None
     maY = None
     maZ = None
@@ -63,14 +63,14 @@ class Sample3AxisMAFilter:
 # Filter base
 #
 class SampleFilter:
-    value = 0.0
+    value = None
     def addSampleValue(self, newValue): raise "Did not implement this method"
 
 ###########################################
 # Low-pass_filter
 # See http://en.wikipedia.org/wiki/Low-pass_filter for details low pass filtering
 class LowFilter(SampleFilter):
-    _filterConstant = 0.0
+    _filterConstant = None
 
     def __init__(self, rate, cutoffFreq):
         dt = 1.0 / rate;
@@ -85,13 +85,13 @@ class LowFilter(SampleFilter):
 # High-pass_filter
 # See http://en.wikipedia.org/wiki/High-pass_filter for details on high pass filtering
 class HighFilter(SampleFilter):
-    _filterConstant = 0.0
-    _lastSampleVal = 0.0
+    _filterConstant = None
+    _lastSampleVal = None
 
     def __init__(self, rate, cutoffFreq):
         dt = 1.0 / rate;
         RC = 1.0 / cutoffFreq;
-        _filterConstant = RC / (dt + RC);
+        self._filterConstant = RC / (dt + RC);
 
     def addSampleValue(self, newValue):
         self._lastSampleVal = newValue;

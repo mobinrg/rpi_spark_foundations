@@ -40,7 +40,7 @@ class OSInfo:
         return out.splitlines()
 
     def bytesUnit2HM(self, n):
-        """
+        """!
             bytes2Unit(10000) => '9K'
             bytes2Unit(100001221) => '95M'
         """
@@ -105,12 +105,40 @@ class OSInfo:
         return result
 
     def getCPUsage(self):
+        """!
+            https://github.com/Leo-G/DevopsWiki/wiki/How-Linux-CPU-Usage-Time-and-Percentage-is-calculated
+            <pre>
+             cat /proc/stat
+                 user nice system idle iowait  irq  softirq steal guest guest_nice
+            cpu  4705 356  584    3699   23    23     0       0     0          0
+            </pre>
+
+            Formula
+            To calculate Linux CPU usage time subtract the idle CPU time from the total CPU time as follows:
+            Total_CPU_time_since_boot(TC_TSB) = user + nice + system + idle + iowait + irq + softirq + steal
+            Total_CPU_Idle_time_since_boot(TCI_TSB) = idle + iowait
+            Total_CPU_usage_time_since_boot(TCU_TSB) = Total_CPU_time_since_boot - Total_CPU_Idle_time_since_boot
+            Total_CPU_percentage(TCP) = Total_CPU_usage_time_since_boot / Total_CPU_time_since_boot * 100
+        """
         cpu = self._cmd(["grep", "cpu", "/proc/stat" ])
         cols = re.sub(r'(( )+|(\n)+)', " ", str(cpu[0]))
         cols = re.sub(r'((b\')|(\\t)|(\'))', "", str(cols))
         cols = re.sub(r"\A\s+", "", str(cols))
         usage = cols.split(' ')
-        return ( float(usage[1]) + float(usage[3]) ) / ( float(usage[1]) + float(usage[3]) + float(usage[4]) )
+        #print(usage)
+
+        TC_TSB = 0.00
+        for i in range(1,9):
+            TC_TSB += float(usage[i])
+
+        TCI_TSB = float(usage[4]) + float(usage[5])
+        TCU_TSB = TC_TSB - TCI_TSB
+        TCP = TCU_TSB / TC_TSB
+
+        #print(TC_TSB, TCI_TSB, TCU_TSB, TCP)
+        #print(float(1.00)/TCI_TSB)
+        #return ( float(usage[1]) + float(usage[3]) ) / ( float(usage[1]) + float(usage[3]) + float(usage[4]) )
+        return TCP
 
     def getIPAddr(self):
         ips = self._cmd(['hostname', '--all-ip-addresses'])

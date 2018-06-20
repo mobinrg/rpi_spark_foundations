@@ -7,10 +7,10 @@ Foundations Key Features:
 
 * Device Configs
 	-- Hardware config of Spark Shield
-	
+
 * Skeletons
 	-- Some classes for easy and fast development
-	
+
 * Utiles
 	-- Some utile classes
 
@@ -64,6 +64,11 @@ Requirements:
 History:
 
 * v1.0	2018.6	first released
+
+
+SDK Manual:
+
+* http://doc.mobinrg.com/rpi_spark/sdk/en/
 
 
 Drive Example:
@@ -148,6 +153,12 @@ MIT license, all text above must be included in any redistribution
 * v1.0	2018.6	第一次发布
 
 
+SDK 参考:
+
+* http://doc.mobinrg.com/rpi_spark/sdk/en/
+* http://doc.mobinrg.com/rpi_spark/sdk/zh_CN/
+
+
 驱动示例代码:
 
 * http://github.com/PowerRocker/rpi_spark_examples
@@ -229,6 +240,13 @@ MIT许可证，上述所有文本必须包含在任何重新发布中
 * JMRPi.Spark Drives Libs
 	-- 在使用此基礎庫之前, 您需要安裝 JMRi.Spark 驅動庫
 	-- $ pip install JMRPi.Spark
+
+
+SDK 参考:
+
+* http://doc.mobinrg.com/rpi_spark/sdk/en/
+* http://doc.mobinrg.com/rpi_spark/sdk/zh_CN/
+
 
 驅動示例源碼:
 
