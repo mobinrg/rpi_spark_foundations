@@ -1,12 +1,12 @@
 RPi Spark Python Foundations
 ===============================
 
-The Raspberry Pi Spark Shield allows you to easily develop interesting applications through the GPIO of Raspberry Pi.
+The Raspberry Pi Spark pHAT board let you to easily develop interesting applications through the GPIO of Raspberry Pi.
 
 Foundations Key Features:
 
 * Device Configs
-	-- Hardware config of Spark Shield
+	-- Hardware config of Spark pHAT
 
 * Skeletons
 	-- Some classes for easy and fast development
@@ -14,8 +14,13 @@ Foundations Key Features:
 * Utiles
 	-- Some utile classes
 
+* CLI
+	-- RPi Spark CLI command line interface: rpi_spark ( 'rpi_spark -h' to show help )
+	-- RPi Spark Launcher: rspk ( 'rspk -h' to show help )
 
-Spark Shield Key Features:
+
+
+Spark pHAT Key Features:
 
 * 128x64 monochrome OLED
 * Accelerometers
@@ -39,7 +44,7 @@ Drives:
 	- Interrupt Support, Polling Support
 
 * Audio
-	- Provides audio output switch that can play back MP3, WAV, etc. music formats via headphones or speakers
+	- Provides audio output switch that can play back OGG, MP3, WAV, etc. music formats via headphones or speakers
 
 * PWM Tone Player
 	- PWM generates pitch and plays
@@ -63,7 +68,8 @@ Requirements:
 
 History:
 
-* v1.0	2018.6	first released
+* v1.0.3	2018.7
+* v1.0.0	2018.6	first released
 
 
 SDK Manual:
@@ -73,8 +79,8 @@ SDK Manual:
 
 Drive Example:
 
-* http://github.com/PowerRocker/rpi_spark_examples
-* http://www.mobinrg.com/resources/rpi_spark/spark_examples.zip
+* http://github.com/mobinrg/rpi_spark_examples
+* http://doc.mobinrg.com/download/rpi_spark/spark_examples.zip
 
 
 Written by Kunpeng Zhang.
@@ -127,11 +133,14 @@ MIT license, all text above must be included in any redistribution
 	-- 中断支持，轮询支持
 
 * 音频
-	-- 提供音频输出开关，能够通过耳机或扬声器回放 MP3，WAV，等音乐格式
+	-- 提供音频输出开关，能够通过耳机或扬声器回放 OGG, MP3， WAV，等音乐格式
 
 * PWM 音调
 	-- PWM 生成音调并且播放
 
+* CLI
+	-- RPi Spark CLI command line interface: rpi_spark ( 'rpi_spark -h' to show help )
+	-- RPi Spark Launcher: rspk ( 'rspk -h' to show help )
 
 支持的树梅派：
 
@@ -150,7 +159,8 @@ MIT license, all text above must be included in any redistribution
 
 版本历史:
 
-* v1.0	2018.6	第一次发布
+* v1.0.3	2018.7
+* v1.0.0	2018.6	第一次发布
 
 
 SDK 参考:
@@ -161,8 +171,8 @@ SDK 参考:
 
 驱动示例代码:
 
-* http://github.com/PowerRocker/rpi_spark_examples
-* http://www.mobinrg.com/resources/rpi_spark/spark_examples.zip
+* http://github.com/mobinrg/rpi_spark_examples
+* http://doc.mobinrg.com/download/rpi_spark/spark_examples.zip
 
 由 Kunpeng Zhang 撰写。
 MIT许可证，上述所有文本必须包含在任何重新发布中
@@ -188,6 +198,10 @@ MIT许可证，上述所有文本必须包含在任何重新发布中
 
 * 效用類
 	-- 有用的類庫
+	
+* CLI
+	-- RPi Spark CLI command line interface: rpi_spark ( 'rpi_spark -h' to show help )
+	-- RPi Spark Launcher: rspk ( 'rspk -h' to show help )
 
 
 火花擴展板設計包含:
@@ -215,7 +229,7 @@ MIT许可证，上述所有文本必须包含在任何重新发布中
 	-- 中斷支持，輪詢支持
 
 * 音頻
-	-- 提供音頻輸出開關，能夠通過耳機或揚聲器回放 MP3，WAV，等音樂格式
+	-- 提供音頻輸出開關，能夠通過耳機或揚聲器回放 OGG, MP3， WAV，等音樂格式
 
 * PWM 音調
 	-- PWM 生成音調並且播放
@@ -229,8 +243,8 @@ MIT许可证，上述所有文本必须包含在任何重新发布中
 
 
 版本歷史:
-
-* v1.0 2018.6 第一次發布
+* v1.0.3	2018.7
+* v1.0.0	2018.6 第一次發布
 
 
 系統需求:
@@ -250,8 +264,8 @@ SDK 参考:
 
 驅動示例源碼:
 
-* http://github.com/PowerRocker/rpi_spark_examples
-* http://www.mobinrg.com/resources/rpi_spark/spark_examples.zip
+* http://github.com/mobinrg/rpi_spark_examples
+* http://doc.mobinrg.com/download/rpi_spark/spark_examples.zip
 
 
 由 Kunpeng Zhang 撰寫。

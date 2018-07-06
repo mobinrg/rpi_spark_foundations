@@ -1,0 +1,134 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# RPi Spark Launcher
+#
+# Author: Kunpeng Zhang
+# 2018.7.04
+#
+# See LICENSE for details.
+
+__author__ = "Kunpeng Zhang"
+__copyright__ = "Copyright 2018, The RPi Spark Project"
+__credits__ = [""]
+__license__ = "MIT"
+__version__ = "1.0.0"
+__maintainer__ = "Kunpeng Zhang"
+__email__ = "support@mobinrg.net"
+__status__ = "Production"
+
+import os
+import os.path
+import sys
+import getopt
+import json
+import importlib
+
+class Params:
+    cmdParams = None
+
+    def __init__(self, argv):
+        self.cmdParams = { "base_name":"", "file_path":"", "file_module_name":"", "spec_spark_module":"" }
+        self.getParams(argv)
+
+    def showHelp(self):
+        item_str = '    --%(arg)-' '24s%(desc)s'
+        item_str_short = '-%(short_arg)s, --%(arg)-' '24s%(desc)s'
+
+        cmdFile = sys.argv[0]
+        print('RPi Spark Launcher -- CLI v%(version)s' % {"version": __version__ })
+        print('Usage: rspk filename [--spark=a_spark_module_name]\n')
+        print("* a Spark module class name")
+        print(item_str % {"arg":"spark", "desc":"Specifies to run a Spark module class"})
+
+        print("")
+        print("* Eamples")
+        print("    $>rspk helloworld.py")
+        print("        Run the Spark module named 'helloworld' in helloworld.py\n")
+        print("    $>rspk HelloWorld")
+        print("        Run the Spark module named 'HelloWorld' in HelloWorld.py\n")
+        print("    $>rspk test.py --spark=sim3d")
+        print("        Run the Spark module named 'sim3d' in test.py\n")
+        print("    $>rspk test --spark=sim3d")
+        print("        Run the Spark module named 'sim3d' in test.py\n")
+        print("")
+
+    def getParams(self, argv):
+        if len(argv) <=0 :
+            self.showHelp()
+            sys.exit(2)
+
+        if argv[0].upper() not in ("H", "-H", "HELP", "-HELP"):
+            if self._checkFileExists(argv[0]) == False:
+                print("Can not find spark module file, please check the filename or type type 'rpsk -h' for usage..")
+                sys.exit(2)
+
+            self.cmdParams["base_name"] = os.path.basename(argv[0])
+            self.cmdParams["file_module_name"] = os.path.splitext(self.cmdParams["base_name"])[0]
+            self.cmdParams["file_path"] = os.path.dirname(os.path.abspath(argv[0]))
+
+            # 处理命令行 ( 除去第个文件名参数 )
+            argv.pop(0)
+
+        try:
+           opts, args = getopt.getopt( argv, "h:", [ "spark=" ])
+        except getopt.GetoptError:
+            self.showHelp()
+            sys.exit(2)
+
+        for opt, arg in opts:
+            # print(opt, arg)
+            if opt == ("-h", "--help"):
+               showHelp()
+               sys.exit()
+            elif opt in ("--spark"):
+                self.cmdParams["spec_spark_module"] = arg;
+
+    def _checkFileExists(self, filename):
+        # is python filename
+        if filename[-3:].upper() == ".PY":
+            if os.path.exists(filename): return True
+        else:    
+            pyfile = filename + ".py"
+            return os.path.exists(pyfile)
+        return False
+
+class SparkLauncher:
+    cmdParams = None
+
+    def __init__(self, params):
+        self.cmdParams = params
+    
+    def launcher(self):
+        sys.path.append( self.cmdParams["file_path"] )
+        #print(self.cmdParams)
+
+        if self.cmdParams["file_module_name"] not in [None, ""]:
+            # 加载指定的 Spark 模块文件
+            try:
+                SparkLib = importlib.import_module( self.cmdParams["file_module_name"], "package" )
+            except Exception as err:
+                print("ERR: {}\n".format(str(err)))
+                sys.exit()
+
+            # 加载运行 Spark 类
+            try:
+                SparkClass = getattr(SparkLib, self.cmdParams["file_module_name"] if self.cmdParams["spec_spark_module"]=="" else self.cmdParams["spec_spark_module"])
+            except Exception as err:
+                print("ERR: {}\n".format(str(err)))
+                sys.exit()
+
+            # 运行 Spark
+            from JMRPiFoundations.Skeleton.RPiSparkProvider import initSpark
+            from JMRPiFoundations.Devices.rpi_spark_z_1_0_0 import RPiSparkConfig as mySparkConfig
+
+            mySpark = initSpark()
+            mySparkModule = SparkClass(mySparkConfig, mySpark)
+            mySparkModule.run()
+
+def main(argv):
+    myParams = Params(argv)
+    mySparkLauncher = SparkLauncher( myParams.cmdParams )
+    mySparkLauncher.launcher()
+
+if __name__ == "__main__":
+   main(sys.argv[1:])

@@ -36,19 +36,26 @@ class RPiSparkModule:
     """!
     \~english
     RPiSparkModule is a basic class designed for fast and easy development 
-    of RPi Spark Shield applications. It contains the required input and 
+    of RPi Spark pHAT applications. It contains the required input and 
     output object instances and some common processing functions. 
     Just simply inherit and implement the setup() and run() functions 
-    to fast and easily create interesting RPi Spark Shield applications
+    to fast and easily create interesting RPi Spark pHAT applications
 
     \~chinese
-    RPiSparkModule 是为快速且更容易的开发 RPi Spark Shield 应用而设计的基础类，
+    RPiSparkModule 是为快速且更容易的开发 RPi Spark pHAT 应用而设计的基础类，
     它包含了所需的输入和输出对象实例和一些常用的处理函数功能。仅需继承并且实现 
-    setup() 和 run() 两个函数即可快速容易的创建丰富有趣的 RPi Spark Shield 应用
+    setup() 和 run() 两个函数即可快速容易的创建丰富有趣的 RPi Spark pHAT 应用
     """
 
-    _RPiSparkConfig = None
-    _RPiSpark = None
+    ###
+    # a RPiSparkConfig instance
+    # @see RPiSparkConfig
+    RPiSparkConfig = None
+
+    ###
+    # a RPiSpark instance
+    # @see RPiSpark
+    RPiSpark = None
 
     def __init__(self, RPiSparkConfig, RPiSpark):
         """!
@@ -62,8 +69,8 @@ class RPiSparkModule:
         @param RPiSparkConfig: RPiSparkConfig 对象实例
         @param RPiSpark: RPiSpark 对象实例
         """
-        self._RPiSparkConfig = RPiSparkConfig
-        self._RPiSpark = RPiSpark
+        self.RPiSparkConfig = RPiSparkConfig
+        self.RPiSpark = RPiSpark
         self.setup()
 
     def _readKeyButton(self, keyBtn):
@@ -82,33 +89,33 @@ class RPiSparkModule:
             @retval True: 按键按下
             @retval False: 按键未操作
         """
-        if self._RPiSpark.Keyboard.readKeyButton( keyBtn ) == 0:
+        if self.RPiSpark.Keyboard.readKeyButton( keyBtn ) == 0:
             sleep(0.015)
-            return True if self._RPiSpark.Keyboard.readKeyButton( keyBtn ) == 0 else False
+            return True if self.RPiSpark.Keyboard.readKeyButton( keyBtn ) == 0 else False
         return False
 
     def _readExitButtonStatus(self):
         """!
         \~english
-        Read Exit action ( buttn A and Joy UP press down same time )
+        Read Exit action ( button A and Joy UP press down same time )
         @return boolean
             @retval True: Exit key buttons did pressed
             @retval False: Exit key buttons didn't press
             
         \~chinese
-        查询退出组合按键状态 ( buttn A 和 Joy UP 同时按下 )
+        查询退出组合按键状态 ( button A 和 Joy UP 同时按下 )
         @return boolean
             @retval True: 退出键被按下
             @retval False: 未按退出键
         """
-        pressA = self._readKeyButton(self._RPiSparkConfig.BUTTON_ACT_A)
-        pressUp = self._readKeyButton(self._RPiSparkConfig.BUTTON_JOY_UP)
+        pressA = self._readKeyButton(self.RPiSparkConfig.BUTTON_ACT_A)
+        pressUp = self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_UP)
         return pressA and pressUp
 
     def _readAnyButtonStatus(self):
         """!
         \~english
-        Read any buttons action ( any action buttns or Joy buttons had press down )
+        Read any buttons action ( any action buttons or Joy buttons had press down )
         @return int( > 0 ) or boolean
             @retval int: Key button had pressed and this value is key button io number
             @retval False: Not key button press
@@ -119,20 +126,20 @@ class RPiSparkModule:
             @retval 整数: 有按键按下，返回值即为按键 ID
             @retval False: 没有按键按下
         """
-        if self._readKeyButton(self._RPiSparkConfig.BUTTON_ACT_A):
-            return self._RPiSparkConfig.BUTTON_ACT_A
-        if self._readKeyButton(self._RPiSparkConfig.BUTTON_ACT_B):
-            return self._RPiSparkConfig.BUTTON_ACT_B
-        if self._readKeyButton(self._RPiSparkConfig.BUTTON_JOY_UP):
-            return self._RPiSparkConfig.BUTTON_JOY_UP
-        if self._readKeyButton(self._RPiSparkConfig.BUTTON_JOY_DOWN):
-            return self._RPiSparkConfig.BUTTON_JOY_DOWN
-        if self._readKeyButton(self._RPiSparkConfig.BUTTON_JOY_LEFT):
-            return self._RPiSparkConfig.BUTTON_JOY_LEFT
-        if self._readKeyButton(self._RPiSparkConfig.BUTTON_JOY_RIGHT):
-            return self._RPiSparkConfig.BUTTON_JOY_RIGHT
-        if self._readKeyButton(self._RPiSparkConfig.BUTTON_JOY_OK):
-            return self._RPiSparkConfig.BUTTON_JOY_OK
+        if self._readKeyButton(self.RPiSparkConfig.BUTTON_ACT_A):
+            return self.RPiSparkConfig.BUTTON_ACT_A
+        if self._readKeyButton(self.RPiSparkConfig.BUTTON_ACT_B):
+            return self.RPiSparkConfig.BUTTON_ACT_B
+        if self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_UP):
+            return self.RPiSparkConfig.BUTTON_JOY_UP
+        if self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_DOWN):
+            return self.RPiSparkConfig.BUTTON_JOY_DOWN
+        if self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_LEFT):
+            return self.RPiSparkConfig.BUTTON_JOY_LEFT
+        if self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_RIGHT):
+            return self.RPiSparkConfig.BUTTON_JOY_RIGHT
+        if self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_OK):
+            return self.RPiSparkConfig.BUTTON_JOY_OK
 
         return False
 
@@ -155,10 +162,10 @@ class RPiSparkModule:
         \~
         <pre>
         def _keyButtonDown(self, channel):
-            if channel == self._RPiSparkConfig.BUTTON_ACT_A:
+            if channel == self.RPiSparkConfig.BUTTON_ACT_A:
                self._actStatus = 2
                return \n
-            if channel == self._RPiSparkConfig.BUTTON_ACT_B:
+            if channel == self.RPiSparkConfig.BUTTON_ACT_B:
                self._actStatus = 3
                return
         </pre>
@@ -184,10 +191,10 @@ class RPiSparkModule:
         \~
         <pre>
         def _keyButtonUp(self, channel):
-            if channel == self._RPiSparkConfig.BUTTON_ACT_A:
+            if channel == self.RPiSparkConfig.BUTTON_ACT_A:
                self._actStatus = 2
                return \n
-            if channel == self._RPiSparkConfig.BUTTON_ACT_B:
+            if channel == self.RPiSparkConfig.BUTTON_ACT_B:
                self._actStatus = 3
                return
         </pre>
@@ -209,11 +216,11 @@ class RPiSparkModule:
         请继承 RPiSparkModule#_keyButtonDown 和 RPiSparkModule#_keyButtonUp 
         实现你想要处理的按键操作
         """
-        if self._RPiSpark.Keyboard.readKeyButton(channel) == 0:
+        if self.RPiSpark.Keyboard.readKeyButton(channel) == 0:
             self._keyButtonDown(channel)
             return
 
-        if self._RPiSpark.Keyboard.readKeyButton(channel) == 1:
+        if self.RPiSpark.Keyboard.readKeyButton(channel) == 1:
             self._keyButtonUp(channel)
             return
 
@@ -231,29 +238,29 @@ class RPiSparkModule:
         """
         if mode.upper() == "INT":
             try:
-                self._RPiSpark.Keyboard.configKeyButtons(
+                self.RPiSpark.Keyboard.configKeyButtons(
                     enableButtons = [
-                        {"id":self._RPiSparkConfig.BUTTON_ACT_A, "callback":self._callbackKeyButton},
-                        {"id":self._RPiSparkConfig.BUTTON_ACT_B, "callback":self._callbackKeyButton},
-                        {"id":self._RPiSparkConfig.BUTTON_JOY_UP, "callback":self._callbackKeyButton},
-                        {"id":self._RPiSparkConfig.BUTTON_JOY_DOWN, "callback":self._callbackKeyButton},
-                        {"id":self._RPiSparkConfig.BUTTON_JOY_LEFT, "callback":self._callbackKeyButton},
-                        {"id":self._RPiSparkConfig.BUTTON_JOY_RIGHT, "callback":self._callbackKeyButton},
-                        {"id":self._RPiSparkConfig.BUTTON_JOY_OK, "callback":self._callbackKeyButton}
+                        {"id":self.RPiSparkConfig.BUTTON_ACT_A, "callback":self._callbackKeyButton},
+                        {"id":self.RPiSparkConfig.BUTTON_ACT_B, "callback":self._callbackKeyButton},
+                        {"id":self.RPiSparkConfig.BUTTON_JOY_UP, "callback":self._callbackKeyButton},
+                        {"id":self.RPiSparkConfig.BUTTON_JOY_DOWN, "callback":self._callbackKeyButton},
+                        {"id":self.RPiSparkConfig.BUTTON_JOY_LEFT, "callback":self._callbackKeyButton},
+                        {"id":self.RPiSparkConfig.BUTTON_JOY_RIGHT, "callback":self._callbackKeyButton},
+                        {"id":self.RPiSparkConfig.BUTTON_JOY_OK, "callback":self._callbackKeyButton}
                     ],
                     bounceTime = 10 )
             except:
                 pass
 
         if mode.upper() == "QUERY":
-            self._RPiSpark.Keyboard.configKeyButtons([
-                {"id":self._RPiSparkConfig.BUTTON_ACT_A, "callback":None},
-                {"id":self._RPiSparkConfig.BUTTON_ACT_B, "callback":None},
-                {"id":self._RPiSparkConfig.BUTTON_JOY_OK, "callback":None},
-                {"id":self._RPiSparkConfig.BUTTON_JOY_UP, "callback":None},
-                {"id":self._RPiSparkConfig.BUTTON_JOY_DOWN, "callback":None},
-                {"id":self._RPiSparkConfig.BUTTON_JOY_LEFT, "callback":None},
-                {"id":self._RPiSparkConfig.BUTTON_JOY_RIGHT, "callback":None}
+            self.RPiSpark.Keyboard.configKeyButtons([
+                {"id":self.RPiSparkConfig.BUTTON_ACT_A, "callback":None},
+                {"id":self.RPiSparkConfig.BUTTON_ACT_B, "callback":None},
+                {"id":self.RPiSparkConfig.BUTTON_JOY_OK, "callback":None},
+                {"id":self.RPiSparkConfig.BUTTON_JOY_UP, "callback":None},
+                {"id":self.RPiSparkConfig.BUTTON_JOY_DOWN, "callback":None},
+                {"id":self.RPiSparkConfig.BUTTON_JOY_LEFT, "callback":None},
+                {"id":self.RPiSparkConfig.BUTTON_JOY_RIGHT, "callback":None}
             ])
 
     def _releaseKeyButtons(self):
@@ -264,33 +271,55 @@ class RPiSparkModule:
         \~chinese
         释放全部按键事件回调
         """
-        self._RPiSpark.Keyboard.removeKeyButtonEvent([
-            self._RPiSparkConfig.BUTTON_ACT_A,
-            self._RPiSparkConfig.BUTTON_ACT_B,
-            self._RPiSparkConfig.BUTTON_JOY_UP,
-            self._RPiSparkConfig.BUTTON_JOY_DOWN,
-            self._RPiSparkConfig.BUTTON_JOY_LEFT,
-            self._RPiSparkConfig.BUTTON_JOY_RIGHT,
-            self._RPiSparkConfig.BUTTON_JOY_OK
+        self.RPiSpark.Keyboard.removeKeyButtonEvent([
+            self.RPiSparkConfig.BUTTON_ACT_A,
+            self.RPiSparkConfig.BUTTON_ACT_B,
+            self.RPiSparkConfig.BUTTON_JOY_UP,
+            self.RPiSparkConfig.BUTTON_JOY_DOWN,
+            self.RPiSparkConfig.BUTTON_JOY_LEFT,
+            self.RPiSparkConfig.BUTTON_JOY_RIGHT,
+            self.RPiSparkConfig.BUTTON_JOY_OK
         ])
 
-    # note 1-7, None mean is Mute Tone
-    def _beepTone(self, note = None, delay = 0.02, muteDelay = 0.05):
+    def _beepTone(self, note = None, delay = 0.02, muteDelay = 0.05, tonePlayer = None):
+        """!
+        \~english
+        Play an beep tone
+        @param note: a note, can be chosen: 1 ~ 7.
+        @param delay: note delay time, unit: second
+        @param mutedDelay: muted time after playing, unit: second
+        @param tonePlayer: a RPiTonePlayer object instance, 
+                if None means use self.RPiSpark.Tone to play a note.
+
+        \~chinese
+        播放嘟嘟声
+        @param note: 音符, 取值： 1 到 7
+        @param delay: 音符播放时间, 单位: 秒
+        @param mutedDelay: 音符播放后禁音时间, 单位： 秒
+        @param tonePlayer: RPiTonePlayer 音符播放器对象实例，
+                如果是 None 使用模块内置对象 self.RPiSpark.Tone 播放。
+        """
+
+        if tonePlayer != None:
+            myTone = tonePlayer
+        elif self.RPiSpark.Tone != None:
+            myTone = self.RPiSpark.Tone
+
+        if myTone == None: return
         if note == None:
-            self._RPiSpark.Tone.stopTone()
-            # self._RPiSpark.Tone.playTone( freq=note, reps=1, delay=delay, muteDelay=muteDelay )
+            myTone.stopTone()
             return
- 
+
         if note>0 and note<=7:
             try:
                 tones = [ 441,495,556,589,661,742,833 ]
-                self._RPiSpark.Tone.playTone( tones[note-1], 1, delay, muteDelay )
-                self._RPiSpark.Tone.stopTone()
+                myTone.playTone( tones[note-1], 1, delay, muteDelay )
+                myTone.stopTone()
             except:
                 print("Beep error")
 
-    def _beep(self):
-        self._beepTone( note = 3 , delay = 0.02, muteDelay = 0.02 )
+    def _beep(self, tonePlayer = None):
+        self._beepTone( note = 3 , delay = 0.02, muteDelay = 0.02, tonePlayer = tonePlayer )
 
     def setup(self):
         """!

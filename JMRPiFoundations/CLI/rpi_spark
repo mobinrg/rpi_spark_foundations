@@ -1,0 +1,522 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# RPi Spark Command Line Interface
+#
+# Author: Kunpeng Zhang
+# 2018.6.13
+#
+# See LICENSE for details.
+__author__ = "Kunpeng Zhang"
+__copyright__ = "Copyright 2018, The RPi Spark Project"
+__credits__ = [""]
+__license__ = "MIT"
+__version__ = "1.0.0"
+__maintainer__ = "Kunpeng Zhang"
+__email__ = "support@mobinrg.net"
+__status__ = "Production"
+
+import sys
+import getopt
+import json
+
+from time import sleep
+from PIL import Image
+from PIL import ImageFont
+
+from JMRPiFoundations.Skeleton.RPiSparkProvider import initSpark
+from JMRPiFoundations.Skeleton.RPiSparkModule import RPiSparkModule
+from JMRPiFoundations.Devices.rpi_spark_z_1_0_0 import RPiSparkConfig as mySparkConfig
+
+DEF_FONT = ImageFont.load_default()
+
+######################################################
+# cli spark params
+#
+# --board={rpi_spark_v100 | rpi_spark_v110}
+# --ot={normal|json}
+# 
+# --dsp_power={on|off}
+# --dsp_clear
+# 
+# --get_accel
+# --get_gyro
+# --get_temp
+# --get_key=btn_name1,btn_name2
+#     {act_a | act_b | joy_up | joy_down | joy_left | joy_right | joy_center }
+# 
+# 
+# --draw
+# --set_shape = { point | line | rect | circle | ellipse | text }
+# --set_xy = x1,y1,x2,y2
+# --set_fill = 1
+# --set_outline = 1
+# --set_width = 2
+# --set_text = "This is test..."
+# --set_font_size = 12
+# --set_font_name = font_file_name
+# 
+#
+class Params:
+    _cmdDraw = None
+    cmdParams = None
+
+    def __init__(self, argv):
+        self._cmdList = []
+        self.cmdParams = { "ot":"normal", "it":"normal", "cmd_list":self._cmdList }
+        self.getParamFromSTDIN()
+        self.getParams(argv)
+
+    def showHelp(self):
+        item_str = '    --%(arg)-' '24s%(desc)s'
+        item_str_short = '-%(short_arg)s, --%(arg)-' '24s%(desc)s'
+
+        cmdFile = sys.argv[0]
+        print('RPi Spark -- CLI v%(version)s' % {"version": __version__ })
+        print('Usage:\n')
+        print("")
+        print("* Draw")
+        print(item_str % {"arg":"draw", "desc":"Draw a shape on screen of RPi Spark"})
+        print(item_str % {"arg":"set_shape", "desc":"Shape for draw, can be: point, line, rect, arc, circle, ellipse, text. eg. --set_shape=arc"})
+        print(item_str % {"arg":"set_xy", "desc":"Shape position, you can input format: x1,y1,x2,y2 or x1,y1 . example: --set_xy=10,10,32,50 or --set_xy=10,24"})
+        print(item_str % {"arg":"set_fill", "desc":"Shape fill color. 0: black, 1: white"})
+        print(item_str % {"arg":"set_outline", "desc":"Shape outline color. Shape: Rect, Ellipse, Circle with this attribute. 0: black, 1: white"})
+        print(item_str % {"arg":"set_width", "desc":"Shape outline width. Shape: Line with this attribute"})
+        print(item_str % {"arg":"set_arc", "desc":"Set arc Starting and Ending angle, in degrees. Angles are measured from 3 o’clock, increasing clockwise. eg. --set_arc=30,40"})
+        print(item_str % {"arg":"set_radius", "desc":"Set radius of circle. eg. --set_radius=3"})
+        print(item_str % {"arg":"set_text", "desc":"Set a text for draw on screen."})
+        print(item_str % {"arg":"set_font_name", "desc":"Custom a font for draw text. This font name is the name of the font file and must exist in the current directory. eg. --set_font_name=FreeSans.ttf"})
+        print(item_str % {"arg":"set_font_size", "desc":"Custom a font size for draw text. Must be setup font name before (same time uses set_font_name)"})
+
+        print("")
+        print("* Read data")
+        print(item_str % {"arg":"get_accel", "desc":"Read accelerometer data from RPi Spark"})
+        print(item_str % {"arg":"get_gyro", "desc":"Read gyroscope data from RPi Spark"})
+        print(item_str % {"arg":"get_temp", "desc":"Read temperature data from RPi Spark"})
+        print(item_str % {"arg":"get_btn", "desc":"Read key button(s) status from RPi Spark. \n\t\t\t\tvalue can be: [ act_a | act_b | joy_up | joy_down | joy_left | joy_right | joy_center ].\n\t\t\t\teg. --get_btn=act_a,act_b,joy_up (read 3 keys status) or --get_btn=act_b (just only read act_b status)"})
+
+        print("")
+        print("* Others")
+        print(item_str % {"arg":"dsp_power", "desc":"Trun On display or Trun Off, can be: on, off\teg. --dsp_power=on"})
+        print(item_str % {"arg":"dsp_clear", "desc":"Clear display"})
+
+        print("")
+#         print(item_str % {"arg":"board", "desc":"can be: rpi_spark_v100, rpi_spark_v110"})
+        print(item_str % {"arg":"ot", "desc":"data output style. can be: normal(default), json\t"})
+        print(item_str_short % {"short_arg":"h", "arg":"help", "desc": "show help"})
+
+        print("")
+        print("* Eamples")
+        print("    $>rpi_spark --draw --set_shape=text --set_text=\"Hello World!\" --set_xy=10,10 --set_font_name=FreeSans.ttf --set_font_size=14")
+        print("        Draw \"Hello World!\" at position (10,10) and use font FreeSans.ttf and size 12\n")
+        print("    $>rpi_spark --draw --set_shape=line --set_xy=10,10,20,40 --set_width=2 --set_outline=1")
+        print("        Draw a white line from (10,10) to (20,40) and width 2pix\n")
+        print("    $>rpi_spark --draw --set_shape=rect --set_xy=10,10,20,40 --set_fill=1 --set_outline=1")
+        print("        Draw a rect that length and width of 10pix and 30pix at position (10,10)\n")
+        print("    $>rpi_spark --draw --set_shape=circle --set_xy=32,32 --set_radius=10 --set_fill=1 --set_outline=1")
+        print("        Draw a circle at position (32,32) that radius is 10pixs and fill white color and let it's outline is white color\n")
+        print("    $>rpi_spark --draw --set_shape=arc --set_xy=10,10,20,40 --set_arc=0,180 --set_fill=1")
+        print("        Draw a arc from (10,10) to (20,40)\n")
+        print("    $>rpi_spark --get_accel --get_gyro --get_temp")
+        print("        Read data from RPi Spark\n")
+        print("    $>rpi_spark --dsp_power=off")
+        print("        Trun off screen\n")
+        print("    $>rpi_spark --dsp_clear")
+        print("        Clear screen\n")
+        print("")
+
+
+    def getParams(self, argv):
+        try:
+           opts, args = getopt.getopt(argv,"h:",
+                    [ "draw", 
+                      "set_shape=",
+                      "set_xy=",
+                      "set_fill=",
+                      "set_outline=",
+                      "set_width=",
+                      "set_arc=",
+                      "set_radius=",
+                      "set_text=",
+                      "set_font_size=",
+                      "set_font_name=",
+
+                      "get_accel",
+                      "get_gyro",
+                      "get_temp",
+                      "get_key=",
+
+                      "dsp_power=",
+                      "dsp_clear",
+
+                      "ot="
+                    ]
+                )
+        except getopt.GetoptError:
+           self.showHelp()
+           sys.exit(2)
+        
+        
+        if len(opts) < 1 and len(self._cmdList)<=0:
+           self.showHelp()
+           sys.exit(2)
+
+        for opt, arg in opts:
+            # print(opt, arg)
+            if opt == ("-h", "--help"):
+               showHelp()
+               sys.exit()
+            elif opt in ("--draw"):
+                self.setDrawCmd( key="cmd", value="draw" )
+            elif opt in ("--set_shape"):
+                self.setDrawCmd( key="shape", value=arg )
+            elif opt in ("--set_fill"):
+                self.setDrawCmd( key="fill", value = int(arg) )
+            elif opt in ("--set_outline"):
+                self.setDrawCmd( key="outline", value = int(arg) )
+            elif opt in ("--set_width"):
+                self.setDrawCmd( key="width", value = int(arg) )
+            elif opt in ("--set_text"):
+                self.setDrawCmd( key="text", value=arg )
+            elif opt in ("--set_font_size"):
+                self.setDrawCmd( key="font_size", value = int(arg) )
+            elif opt in ("--set_font_name"):
+                self.setDrawCmd( key="font_name", value=arg )
+            elif opt in ("--set_xy"):
+                xy = arg.split(",")
+                xy_t = ["x1","y1","x2","y2"]
+                for index, xy_v in enumerate(xy):
+                    self.setDrawCmd( key=xy_t[index], value=float(xy_v) )
+            elif opt in ("--set_radius"):
+                self.setDrawCmd( key="r", value=arg )
+            elif opt in ("--set_arc"):
+                se = arg.split(",")
+                if len(se) == 2:
+                    self.setDrawCmd( key="s", value=float(se[0]) )
+                    self.setDrawCmd( key="e", value=float(se[1]) )
+                else:
+                    print("Input error ( start[0-360], end [0-36]. example: 10, 34)")
+
+            ###########################
+            # 数据读取
+            #
+            elif opt in ("--get_accel"):
+                self._cmdList.append({"cmd":"data", "params":{"data":"accel"} })
+
+            elif opt in ("--get_gyro"):
+                self._cmdList.append({"cmd":"data", "params":{"data":"gyro"} })
+
+            elif opt in ("--get_temp"):
+                self._cmdList.append({"cmd":"data", "params":{"data":"temp"} })
+                
+            elif opt in ("--get_key"):
+                self._cmdList.append({"cmd":"data", "params":{"data":"key", "keys": arg.split(",") } })
+
+            ###########################
+            # 设备动作 
+            #
+            elif opt in ("--dsp_clear"):
+                self._cmdList.append( {"cmd":"device", "params":{"device":"dsp", "act":"clear"} } )
+
+            elif opt in ("--dsp_power"):
+                self._cmdList.append( {"cmd":"device", "params":{"device":"dsp", "act":arg} } )
+
+            elif opt in ("--ot"):                
+                self.cmdParams["ot"] = arg
+
+        if self._cmdDraw != None:
+            self._cmdList.append(self._cmdDraw)
+
+    def setDrawCmd(self, key, value):
+        if self._cmdDraw == None: self._cmdDraw = {"cmd":"draw", "params":{} }
+        
+        if isinstance(value, str):
+            if value.upper() != "DRAW" and self._cmdDraw.get("params", None) != None:
+                self._cmdDraw["params"][key] = value
+        else:
+            self._cmdDraw["params"][key] = value
+
+    def getParamFromSTDIN(self):
+        if not sys.stdin.isatty():
+            try:
+                cmd = ""
+                while True:
+                    data = sys.stdin.readline()
+                    if not data:break
+                    cmd += data
+
+                std_in_params = json.loads( cmd )
+                new_cmd_list = std_in_params.get("cmd_list", None)
+                if new_cmd_list != None:
+                    self._cmdList.extend(new_cmd_list)
+            except:
+                print("Stdin data error")
+
+######################################################
+# cli spark
+#
+class CLISpark(RPiSparkModule):
+    screen = None
+    attitude = None
+    keyboard = None
+
+    cmdParams = None
+    _last_font = None
+
+    def _setFont(self, fontName = None, fontSize = 8):
+        if fontName != None:
+            self._last_font = ImageFont.truetype(fontName, fontSize)
+        else:
+            self._last_font = DEF_FONT
+
+    ###########################
+    # 图形绘制
+    #    
+    def _getXY(self, pDict, style = 2):
+        """ return POINT XY
+            pDict -- {x1:1, y1:2, x2:34, y2:55, f:1, w: 1}
+            style -- can be chosen in { 2 | 4 } 2: two points, 4: four points
+        """
+        if style == 2:
+            return (pDict.get("x", pDict.get("x1", 0)), 
+                    pDict.get("y", pDict.get("y1", 0)))
+        
+        if style == 4:
+            return ( pDict.get("x1", 1), pDict.get("y1", 1), pDict.get("x2", 1), pDict.get("y2", 1) )
+
+    def _drawShape(self, pDict):
+        """
+            pDict: 
+                {shape:"line", x1:1, y1:2, x2:34, y2:55, fill:1, width: 1}
+                {shape:"circle", x:1, y:2, r:34, fill:1, outline: 1}
+                {shape:"rect", x1:1, y1:2, x2:34, y2:55, fill:1, outline: 1}
+                {shape:"ellipse", x1:1, y1:2, x2:34, y2:55, fill:1, outline: 1}
+                {shape:"arc", x1:1, y1:2, x2:34, y2:55, start:0, end:360 fill: None }
+                {shape:"point", x:1, y:2, fill:1}
+                {shape:"text", x:1, y:2, fill:1, text:"some text here ...", "font_name":"a font file name", font_size: 12}
+        """
+        shape = pDict.get("shape", None)
+        if shape == None: return
+        xy4 = self._getXY(pDict, 4)
+        fill = pDict.get("fill", None)
+        outline = pDict.get("outline", None)
+        width = pDict.get("width", 1)
+
+        if shape == "line":
+            self.screen.Canvas.line( xy4, fill, width )
+            return
+        
+        if shape == "rect":
+            self.screen.Canvas.rectangle( xy4, fill, outline )
+            return
+
+        if shape == "ellipse":
+            self.screen.Canvas.ellipse( xy4, fill, outline )
+            return
+        
+        if shape == "arc":
+            s = pDict.get("start", 0)
+            e = pDict.get("end", 360)
+            self.screen.Canvas.arc( xy4, s, e, fill )
+            return
+        
+        if shape == "point":
+            xy2 = self._getXY(pDict, 2)
+            self.screen.Canvas.point( xy2, fill )
+            return
+
+        if shape == "circle":
+            x = pDict.get("x", pDict.get("x1", 0))
+            y = pDict.get("y", pDict.get("y1", 0))
+            r = pDict.get("r", 0)
+            xy = (x-r, y-r, x+r, y+r)
+            self.screen.Canvas.ellipse( xy, fill, outline )
+            return
+        
+        if shape == "text":
+            xy2 = self._getXY(pDict, 2)
+            self._setFont(pDict.get("font_name", None), pDict.get("font_size", 8))
+            self.screen.Canvas.text( xy2, pDict.get("text", ""), fill, font=self._last_font )
+            return
+
+    def _deviceAction(self, pDict):
+        dev = pDict.get("device", None)
+        act = pDict.get("act", None)
+        if dev == None or act == None: return        
+        if dev.upper() == "DSP":
+            if act.upper()=="ON": self.screen.Display.on(); return
+            if act.upper()=="OFF": self.screen.Display.off(); return
+            if act.upper()=="CLEAR": self.screen.clear(); return
+            if act.upper()=="REFRESH": self.screen.refresh(); return
+
+        if dev.upper() == "ATTITUDE":
+            if act.upper()=="ON": self.attitude.open(); sleep(0.1); return
+            if act.upper()=="OFF": self.attitude.sleep(); return
+
+    def _delay(self, pDict):
+        sec = float(pDict.get("sec", 0))
+        sleep(sec)
+
+    def _dspClear(self):
+        self.screen.clear()
+
+    def _dspPower(self, action = "OFF"):
+        if action.upper() == "OFF":
+            self.screen.Display.off()
+
+        if action.upper() == "ON":
+            self.screen.Display.on()
+
+    ###########################
+    # 数据读取
+    #
+    def _attitudePower(self, action = "OFF"):
+        if action.upper() == "OFF":
+            self.attitude.sleep()
+
+        if action.upper() == "ON":
+            self.attitude.open()
+            sleep(0.1)
+            
+    def _readData(self, pDict):
+        """
+            pDict: { data: "accel"  }
+                data -- { "accel" | "gyro" | "temp" | "key" }
+        """
+
+        dataType = pDict.get("data", None)
+        if dataType == None: return None
+
+        if dataType == "accel": return self.attitude.getAccelData()
+        if dataType == "gyro": return self.attitude.getAccelData()
+        if dataType == "temp": return self.attitude.getTemp()
+        if dataType == "key":
+            keys = pDict.get("keys")
+            key_st = {}
+            for keyName in keys:
+                key_st[keyName] = self.keyboard.readKeyButton( self._getBtnIDFromName(keyName) )
+            return key_st
+
+    def _getBtnIDFromName(self, btnName):
+        if btnName.upper() == "ACT_A":
+            return self.RPiSparkConfig.BUTTON_ACT_A
+
+        if btnName.upper() == "ACT_B":
+            return self.RPiSparkConfig.BUTTON_ACT_B
+
+        if btnName.upper() == "JOY_UP":
+            return self.RPiSparkConfig.BUTTON_JOY_UP
+
+        if btnName.upper() == "JOY_DOWN":
+            return self.RPiSparkConfig.BUTTON_JOY_DOWN
+
+        if btnName.upper() == "JOY_LEFT":
+            return self.RPiSparkConfig.BUTTON_JOY_LEFT
+
+        if btnName.upper() == "JOY_RIGHT":
+            return self.RPiSparkConfig.BUTTON_JOY_RIGHT
+
+        if btnName.upper() == "JOY_CENTER":
+            return self.RPiSparkConfig.BUTTON_JOY_OK
+
+    def _executCMD(self, cmdList):
+        """
+            cmdList: cmd params of array
+                [
+                    {cmd:"device", params:{"device":"dsp", "act":"clear"} },
+                    {cmd:"draw", params:{"shape":"circle", "x":10, "y":10, "r":10, "fill":1, "outline":1} },
+                    ....
+                ]
+        """
+        resultData = {}
+        for cmdLine in cmdList:
+            cmd = cmdLine.get("cmd", None)
+            if cmd == None: continue
+            if cmd.upper() == "DELAY": self._delay( cmdLine.get("params", {}) )
+            if cmd.upper() == "DEVICE": self._deviceAction( cmdLine.get("params", {}) )
+            if cmd.upper() == "DRAW": self._drawShape( cmdLine.get("params", {}) )
+            if cmd.upper() == "DATA":
+                params = cmdLine.get("params", {})
+                resultData[ params.get("data", "Unknow") ] = self._readData( params )
+
+        return resultData
+
+    def _outputTabData(self, data):
+        print("")
+        print("RPi Spark data")
+        print("=" * 80)
+
+        aix_data_str = " %(label)s\t\t| x: %(x).10f\ty: %(y).10f\tz: %(z).10f"
+        accelData = data.get("accel", None)
+        if accelData != None:
+            print( aix_data_str % 
+                   {
+                       "label":"Accel", 
+                       "x":accelData.get("x"), 
+                       "y":accelData.get("y"), 
+                       "z":accelData.get("z") 
+                    } )
+
+        gyroData = data.get("gyro", None)
+        if gyroData != None:
+            print( aix_data_str % 
+                   {
+                       "label":"Gyro", 
+                       "x":gyroData.get("x"), 
+                       "y":gyroData.get("y"), 
+                       "z":gyroData.get("z") 
+                    } )
+
+        tempData = data.get("temp", None)
+        if tempData != None:
+            print( " %(label)s\t\t| %(temp).5f" %
+                   {
+                       "label":"Temp", 
+                       "temp":tempData
+                    } )
+
+        keyData = data.get("key", None)
+        if keyData != None:
+            for (key, keyST) in keyData.items():
+                print(" %(key)s\t\t| %(st)s" % { "key":key , "st":keyST })
+
+#         print("=" * 80)
+
+    #########################
+    # 主程序
+    #
+
+    def setup(self):
+        self.screen = self.RPiSpark.Screen
+        self.attitude = self.RPiSpark.Attitude
+        self.keyboard = self.RPiSpark.Keyboard
+        self._last_font = DEF_FONT
+        self._initKeyButtons( mode = "QUERY" )
+        
+        #self._attitudePower( "ON" )
+        self._deviceAction({"device":"attitude", "act":"on"})
+        pass
+
+    def run(self):
+        if self.cmdParams != None:
+            resultData = self._executCMD( self.cmdParams.get("cmd_list", None) )
+
+            outputType = self.cmdParams.get("ot", "normal").upper()
+            if outputType == "NORMAL":
+                self._outputTabData(resultData)
+            elif outputType == "JSON":
+                print(json.dumps(resultData))
+
+        self.screen.refresh()
+        self._releaseKeyButtons()
+
+def main(argv):
+    myParams = Params(argv)
+#     print(myParams.cmdParams)
+
+    mySpark = initSpark()
+    myCLISpark = CLISpark(mySparkConfig, mySpark)
+    myCLISpark.cmdParams = myParams.cmdParams
+    myCLISpark.run()
+
+if __name__ == "__main__":
+   main(sys.argv[1:])

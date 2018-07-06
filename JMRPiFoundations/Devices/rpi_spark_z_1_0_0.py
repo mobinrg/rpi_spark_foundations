@@ -56,9 +56,9 @@ class RPiSparkConfig:
     DSP_MIRROR_H    = True
     DSP_MIRROR_V    = True
 
-    # Screen rotating, can be choose in [ 0, 90, 180, 270 ]
+    # Screen rotating, can be chosen in [ 0, 90, 180, 270 ]
     SCREEN_ROTATING = 0
-    # Screen buffer color mode, can be choose in [ "1", "RGB" ]
+    # Screen buffer color mode, can be chosen in [ "1", "RGB" ]
     SCREEN_BUFFER_COLOR_MODE_RGB = "RGB"
     SCREEN_BUFFER_COLOR_MODE_BW = "1"
 

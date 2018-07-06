@@ -14,8 +14,7 @@ def initSpark():
 
     @return a RPiSpark object instance
     """
-    
-    #from JMRPiFoundations.Devices.rpi_devices import HW_CONFIG_RPI_SPARK_Z_1 as HWCONFIG
+
     from JMRPiFoundations.Devices.rpi_spark_z_1_0_0 import RPiSparkConfig
     from JMRPiFoundations.Skeleton.RPiSpark import RPiSpark
 
@@ -23,11 +22,11 @@ def initSpark():
     from JMRPiSpark.Drives.Display.SSD1306 import SSD1306_128x64
     from JMRPiSpark.Drives.Key.RPiKeyButtons import RPiKeyButtons
     from JMRPiSpark.Drives.Audio.RPiAudio import RPiAudioDevice
-  
+
     from JMRPiSpark.Drives.Attitude.MPU6050 import MPU6050
     from JMRPiSpark.Drives.Attitude.MPU6050 import DEF_MPU6050_ADDRESS
 
-    from JMRPiSpark.Drives.Audio.RPiTone import RPiTonePlayer
+    # from JMRPiSpark.Drives.Audio.RPiTone import RPiTonePlayer
 
     import spidev
     #open spi bus
@@ -59,6 +58,6 @@ def initSpark():
             screen = myScreen,
             keyboard = RPiKeyButtons(),
             attitude = MPU6050( RPiSparkConfig.ATTITUDE_SENSOR_ADDR ),
-            audio = RPiAudioDevice( pinRight = RPiSparkConfig.AUDIO_R, pinLeft = RPiSparkConfig.AUDIO_L ),
-            tone = RPiTonePlayer( RPiSparkConfig.SPEAKER )
+            audio = RPiAudioDevice( pinRight = RPiSparkConfig.AUDIO_R, pinLeft = RPiSparkConfig.AUDIO_L )
+            # tone = RPiTonePlayer( RPiSparkConfig.SPEAKER )
         )
