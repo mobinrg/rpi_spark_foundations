@@ -63,7 +63,7 @@ class Sample3AxisMAFilter:
 # Filter base
 #
 class SampleFilter:
-    value = None
+    value = 0.0
     def addSampleValue(self, newValue): raise "Did not implement this method"
 
 ###########################################
@@ -92,8 +92,51 @@ class HighFilter(SampleFilter):
         dt = 1.0 / rate;
         RC = 1.0 / cutoffFreq;
         self._filterConstant = RC / (dt + RC);
+        self._lastSampleVal = 0.0
 
     def addSampleValue(self, newValue):
-        self._lastSampleVal = newValue;
         self.value = self._filterConstant * (self.value + newValue - self._lastSampleVal);
+        self._lastSampleVal = newValue;
         return self.value
+
+
+
+###########################################
+# 3 axis low filter
+#
+class LowFilter3Axis:
+    lpX = None
+    lpY = None
+    lpZ = None
+
+    def __init__(self, rate = 25.0, cutoffFreq = 1.0):
+        self.lpX = LowFilter(rate, cutoffFreq)
+        self.lpY = LowFilter(rate, cutoffFreq)
+        self.lpZ = LowFilter(rate, cutoffFreq)
+        
+    def addSampleValue(self, x, y, z):
+        return {    
+            "x":self.lpX.addSampleValue(x), 
+            "y":self.lpY.addSampleValue(y), 
+            "z":self.lpZ.addSampleValue(z)
+            }
+
+###########################################
+# 3 axis high filter
+#
+class HighFilter3Axis:
+    hpX = None
+    hpY = None
+    hpZ = None
+
+    def __init__(self, rate = 25.0, cutoffFreq = 1.0):
+        self.hpX = HighFilter(rate, cutoffFreq)
+        self.hpY = HighFilter(rate, cutoffFreq)
+        self.hpZ = HighFilter(rate, cutoffFreq)
+        
+    def addSampleValue(self, x, y, z):
+        return {    
+            "x":self.hpX.addSampleValue(x), 
+            "y":self.hpY.addSampleValue(y), 
+            "z":self.hpZ.addSampleValue(z)
+            }

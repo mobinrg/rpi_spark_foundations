@@ -11,7 +11,7 @@ __author__ = "Kunpeng Zhang"
 __copyright__ = "Copyright 2018, The RPi Spark Project"
 __credits__ = [""]
 __license__ = "MIT"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __maintainer__ = "Kunpeng Zhang"
 __email__ = "support@mobinrg.net"
 __status__ = "Production"
@@ -23,11 +23,20 @@ import getopt
 import json
 import importlib
 
+from JMRPiFoundations.Skeleton.RPiSparkModule import RPiSparkModule
+
 class Params:
     cmdParams = None
 
     def __init__(self, argv):
-        self.cmdParams = { "base_name":"", "file_path":"", "file_module_name":"", "spec_spark_module":"" }
+        self.cmdParams = { 
+            "base_name":"", 
+            "file_path":"", 
+            "file_module_name":"", 
+            "spec_spark_module":"",
+            "first_spark_module":False,
+            "list_spark_module":False
+            }
         self.getParams(argv)
 
     def showHelp(self):
@@ -36,9 +45,13 @@ class Params:
 
         cmdFile = sys.argv[0]
         print('RPi Spark Launcher -- CLI v%(version)s' % {"version": __version__ })
-        print('Usage: rspk filename [--spark=a_spark_module_name]\n')
-        print("* a Spark module class name")
-        print(item_str % {"arg":"spark", "desc":"Specifies to run a Spark module class"})
+        print('Usage: \nrspk filename -f -l -s <a_spark_module_name> [ --first --list --spark=<a_spark_module_name> ]\n')
+        
+        print(item_str_short % {"short_arg":"f", "arg":"fisrt", "desc":"Launch first 'Spark' we can find"})
+        print(item_str_short % {"short_arg":"l", "arg":"list", "desc":"List all 'Spark's in the module"})
+        print(item_str_short % {"short_arg":"s", "arg":"spark", "desc":"Specifies to run a 'Spark' module class"})
+
+        # print("* a_spark_module_name")
 
         print("")
         print("* Eamples")
@@ -59,7 +72,7 @@ class Params:
 
         if argv[0].upper() not in ("H", "-H", "HELP", "-HELP"):
             if self._checkFileExists(argv[0]) == False:
-                print("Can not find spark module file, please check the filename or type type 'rpsk -h' for usage..")
+                print("Can not find spark module file, please check the filename or type 'rpsk -h' for usage.")
                 sys.exit(2)
 
             self.cmdParams["base_name"] = os.path.basename(argv[0])
@@ -70,7 +83,7 @@ class Params:
             argv.pop(0)
 
         try:
-           opts, args = getopt.getopt( argv, "h:", [ "spark=" ])
+           opts, args = getopt.getopt( argv, "hlfs:", [ "list", "first", "spark=" ])
         except getopt.GetoptError:
             self.showHelp()
             sys.exit(2)
@@ -80,16 +93,21 @@ class Params:
             if opt == ("-h", "--help"):
                showHelp()
                sys.exit()
-            elif opt in ("--spark"):
+            elif opt in ("-s","--spark"):
                 self.cmdParams["spec_spark_module"] = arg;
+            elif opt in ("-l","--list"):
+                self.cmdParams["list_spark_module"] = True;
+            elif opt in ("-f","--first"):
+                self.cmdParams["first_spark_module"] = True;
 
     def _checkFileExists(self, filename):
         # is python filename
-        if filename[-3:].upper() == ".PY":
+        if filename[-3:].upper() == ".PY" or filename[-3:].upper() == ".PYC":
             if os.path.exists(filename): return True
         else:    
             pyfile = filename + ".py"
-            return os.path.exists(pyfile)
+            pycfile = filename + ".pyc"
+            return os.path.exists(pyfile) or os.path.exists(pycfile)
         return False
 
 class SparkLauncher:
@@ -97,8 +115,47 @@ class SparkLauncher:
 
     def __init__(self, params):
         self.cmdParams = params
-    
+
+    def _getSparkModuleList(self, module):
+        sparkModuleList = []
+        mdList = dir(module)
+        for m in mdList:
+            if m.find("__") == 0 : break
+            if m != "RPiSparkModule":
+                try:
+                    cls = getattr(module, m)
+                    if issubclass( cls , RPiSparkModule ):
+                        sparkModuleList.append(m)
+                except:
+                    continue
+
+        return sparkModuleList
+
+    def _waitSparkChoose(self, sparkList):
+        item_str_short = ' %(index)+2s: %(spark)s'
+        print("Which one Spark you want to run?\n")
+        for index, spark in enumerate(sparkList):
+            print(item_str_short % {"index": str(index), "spark": spark})
+
+        # print(item_str_short % {"index": "Q", "spark": "Exit"})
+        print("")
+        response = raw_input("Type your choose (default Exit):")
+
+        if response.upper() == "Q" or response == "":
+            sys.exit()
+
+        try:
+            if int(response)<0 or int(response)>=len(sparkList):
+                print("Your choice is out of range.");
+                sys.exit()
+        except:
+            print("Incorrect choice.");
+            sys.exit()
+
+        return int(response)
+
     def launcher(self):
+
         sys.path.append( self.cmdParams["file_path"] )
         #print(self.cmdParams)
 
@@ -110,12 +167,32 @@ class SparkLauncher:
                 print("ERR: {}\n".format(str(err)))
                 sys.exit()
 
-            # 加载运行 Spark 类
-            try:
-                SparkClass = getattr(SparkLib, self.cmdParams["file_module_name"] if self.cmdParams["spec_spark_module"]=="" else self.cmdParams["spec_spark_module"])
-            except Exception as err:
-                print("ERR: {}\n".format(str(err)))
+            # look for all Spark in the module file
+            spkModuleList = self._getSparkModuleList(SparkLib)
+            if len(spkModuleList)==0:
+                print("ERR: {}\n".format("This module can not find any Spark. Please check if this module is coding according to the specification of RPi Spark."))
                 sys.exit()
+
+            # Run first Spark that we can found
+            if self.cmdParams["first_spark_module"]:
+                SparkClass = getattr(SparkLib, spkModuleList[0])
+
+            elif self.cmdParams["list_spark_module"]:
+                # List all Sparks that we can found then chose one to launch
+                selIndex = self._waitSparkChoose(spkModuleList)
+                SparkClass = getattr(SparkLib, spkModuleList[selIndex])
+
+            else:
+                # 加载运行 Spark 类
+                try:
+                    specSparkName = self.cmdParams["file_module_name"] if self.cmdParams["spec_spark_module"]=="" else self.cmdParams["spec_spark_module"]
+                    SparkClass = getattr(SparkLib, specSparkName)
+
+                except Exception as err:
+                    # Can not find specified Spark then list all Sparks for chosen
+                    print("ERR: We can not find Spark named: {}\n".format(specSparkName)) #str(err)
+                    selIndex = self._waitSparkChoose(spkModuleList)
+                    SparkClass = getattr(SparkLib, spkModuleList[selIndex])
 
             # 运行 Spark
             from JMRPiFoundations.Skeleton.RPiSparkProvider import initSpark
@@ -124,6 +201,7 @@ class SparkLauncher:
             mySpark = initSpark()
             mySparkModule = SparkClass(mySparkConfig, mySpark)
             mySparkModule.run()
+
 
 def main(argv):
     myParams = Params(argv)

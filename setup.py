@@ -43,7 +43,7 @@ pagekages.append("JMRPiFoundations.CLI")
 
 setup (
 	name				= 'JMRPi.Spark.Foundations',
-	version				= '1.0.3',
+	version				= '1.0.4',
 	author				= 'Kunpeng Zhang',
 	author_email		= 'support@mobinrg.com',
 	description			= desc,
