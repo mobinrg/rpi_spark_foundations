@@ -24,7 +24,7 @@
 #
 # #########################################################
 #
-# RPi Spark Device Config
+# RPi-Spark Device Config
 # 树梅火花 -- 配置文件
 #
 # Author: Kunpeng Zhang

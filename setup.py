@@ -1,5 +1,5 @@
 #
-# RPi Spark pHAT Foundation
+# RPi-Spark pHAT Foundation
 # Author: Kunpeng Zhang
 # 2018.6.7
 # 2018.7.5
@@ -43,18 +43,18 @@ pagekages.append("JMRPiFoundations.CLI")
 
 setup (
 	name				= 'JMRPi.Spark.Foundations',
-	version				= '1.0.4',
+	version				= '1.0.5',
 	author				= 'Kunpeng Zhang',
-	author_email		= 'support@mobinrg.com',
+	author_email			= 'support@mobinrg.com',
 	description			= desc,
-	long_description	= desc,
+	long_description		= desc,
 	platforms			= ['Linux'],
 	license				= 'MIT',
 	classifiers			= classifiers,
 	keywords			= keywords,
-	url					= 'https://github.com/mobinrg/rpi_spark_foundation',
-	dependency_links	= [],
-	install_requires	= ["JMRPi.Spark"],
+	url				= 'https://github.com/mobinrg/rpi_spark_foundation',
+	dependency_links		= [],
+	install_requires		= ["JMRPi.Spark"],
 	packages			= pagekages,
-	scripts				= [ 'JMRPiFoundations/CLI/rpi_spark', 'JMRPiFoundations/CLI/rspk' ],
+	scripts				= [ 'JMRPiFoundations/CLI/rpi-spark', 'JMRPiFoundations/CLI/rspk' ],
 )

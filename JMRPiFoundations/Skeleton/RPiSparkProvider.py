@@ -29,35 +29,47 @@ def initSpark():
     # from JMRPiSpark.Drives.Audio.RPiTone import RPiTonePlayer
 
     import spidev
-    #open spi bus
-    spi = spidev.SpiDev()
-    spi.open( RPiSparkConfig.DSP_SPI_PORT, RPiSparkConfig.DSP_SPI_DEVICE)
-    spi.max_speed_hz = RPiSparkConfig.DSP_SPI_MAX_SPEED_HZ
-    spi.cshigh = False
-    spi.mode = 0
-    #create display 
-    myDisplay = SSD1306_128x64( 
-        spi,  
-        spiDC = RPiSparkConfig.DSP_DC,
-        spiReset = RPiSparkConfig.DSP_RESET,
-        mirrorH = RPiSparkConfig.DSP_MIRROR_H, 
-        mirrorV = RPiSparkConfig.DSP_MIRROR_V
-    )
-    myDisplay.init()
-    myDisplay.on()
+    try:
+        #open spi bus
+        spi = spidev.SpiDev()
+        spi.open( RPiSparkConfig.DSP_SPI_PORT, RPiSparkConfig.DSP_SPI_DEVICE)
+        spi.max_speed_hz = RPiSparkConfig.DSP_SPI_MAX_SPEED_HZ
+        spi.cshigh = False
+        spi.mode = 0
+        #create display 
+        myDisplay = SSD1306_128x64( 
+            spi,  
+            spiDC = RPiSparkConfig.DSP_DC,
+            spiReset = RPiSparkConfig.DSP_RESET,
+            mirrorH = RPiSparkConfig.DSP_MIRROR_H, 
+            mirrorV = RPiSparkConfig.DSP_MIRROR_V
+        )
+        myDisplay.init()
+        myDisplay.on()
 
-    myScreen = SScreenSSD1306( 
-        myDisplay, 
-        bufferColorMode = RPiSparkConfig.SCREEN_BUFFER_COLOR_MODE_BW, 
-        displayDirection = RPiSparkConfig.SCREEN_ROTATING
-    )
+        myScreen = SScreenSSD1306( 
+            myDisplay, 
+            bufferColorMode = RPiSparkConfig.SCREEN_BUFFER_COLOR_MODE_BW, 
+            displayDirection = RPiSparkConfig.SCREEN_ROTATING
+        )
+    except:
+        myScreen = None
+        print("Warning: We can not turn on OLED display, please check your RPi-Spark pHAT")
+        pass
+
+    try:
+	myMPU6050 = MPU6050( RPiSparkConfig.ATTITUDE_SENSOR_ADDR )
+    except:
+	myMPU6050 = None
+	print("Warning: We can not find attitude sensor, please check your RPi-Spark pHAT")
+	pass
 
     # return RPiSpark
     return RPiSpark(
             version = RPiSparkConfig.HW_VERSION,
             screen = myScreen,
             keyboard = RPiKeyButtons(),
-            attitude = MPU6050( RPiSparkConfig.ATTITUDE_SENSOR_ADDR ),
+            attitude = myMPU6050,
             audio = RPiAudioDevice( pinRight = RPiSparkConfig.AUDIO_R, pinLeft = RPiSparkConfig.AUDIO_L )
             # tone = RPiTonePlayer( RPiSparkConfig.SPEAKER )
         )

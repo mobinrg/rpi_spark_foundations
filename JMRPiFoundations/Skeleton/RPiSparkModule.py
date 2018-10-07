@@ -31,20 +31,21 @@
 #
 
 from time import sleep
+import RPi.GPIO as GPIO
 
 class RPiSparkModule:
     """!
     \~english
     RPiSparkModule is a basic class designed for fast and easy development 
-    of RPi Spark pHAT applications. It contains the required input and 
+    of RPi-Spark pHAT applications. It contains the required input and 
     output object instances and some common processing functions. 
     Just simply inherit and implement the setup() and run() functions 
-    to fast and easily create interesting RPi Spark pHAT applications
+    to fast and easily create interesting RPi-Spark pHAT applications
 
     \~chinese
-    RPiSparkModule 是为快速且更容易的开发 RPi Spark pHAT 应用而设计的基础类，
+    RPiSparkModule 是为快速且更容易的开发 RPi-Spark pHAT 应用而设计的基础类，
     它包含了所需的输入和输出对象实例和一些常用的处理函数功能。仅需继承并且实现 
-    setup() 和 run() 两个函数即可快速容易的创建丰富有趣的 RPi Spark pHAT 应用
+    setup() 和 run() 两个函数即可快速容易的创建丰富有趣的 RPi-Spark pHAT 应用
     """
 
     ###
@@ -73,7 +74,7 @@ class RPiSparkModule:
         self.RPiSpark = RPiSpark
         self.setup()
 
-    def _readKeyButton(self, keyBtn):
+    def readKeyButton(self, keyBtn):
         """!
         \~english
         Read key button status
@@ -94,7 +95,7 @@ class RPiSparkModule:
             return True if self.RPiSpark.Keyboard.readKeyButton( keyBtn ) == 0 else False
         return False
 
-    def _readExitButtonStatus(self):
+    def readExitButtonStatus(self):
         """!
         \~english
         Read Exit action ( button A and Joy UP press down same time )
@@ -108,11 +109,11 @@ class RPiSparkModule:
             @retval True: 退出键被按下
             @retval False: 未按退出键
         """
-        pressA = self._readKeyButton(self.RPiSparkConfig.BUTTON_ACT_A)
-        pressUp = self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_UP)
+        pressA = self.readKeyButton(self.RPiSparkConfig.BUTTON_ACT_A)
+        pressUp = self.readKeyButton(self.RPiSparkConfig.BUTTON_JOY_UP)
         return pressA and pressUp
 
-    def _readAnyButtonStatus(self):
+    def readAnyButtonStatus(self):
         """!
         \~english
         Read any buttons action ( any action buttons or Joy buttons had press down )
@@ -126,27 +127,27 @@ class RPiSparkModule:
             @retval 整数: 有按键按下，返回值即为按键 ID
             @retval False: 没有按键按下
         """
-        if self._readKeyButton(self.RPiSparkConfig.BUTTON_ACT_A):
+        if self.readKeyButton(self.RPiSparkConfig.BUTTON_ACT_A):
             return self.RPiSparkConfig.BUTTON_ACT_A
-        if self._readKeyButton(self.RPiSparkConfig.BUTTON_ACT_B):
+        if self.readKeyButton(self.RPiSparkConfig.BUTTON_ACT_B):
             return self.RPiSparkConfig.BUTTON_ACT_B
-        if self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_UP):
+        if self.readKeyButton(self.RPiSparkConfig.BUTTON_JOY_UP):
             return self.RPiSparkConfig.BUTTON_JOY_UP
-        if self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_DOWN):
+        if self.readKeyButton(self.RPiSparkConfig.BUTTON_JOY_DOWN):
             return self.RPiSparkConfig.BUTTON_JOY_DOWN
-        if self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_LEFT):
+        if self.readKeyButton(self.RPiSparkConfig.BUTTON_JOY_LEFT):
             return self.RPiSparkConfig.BUTTON_JOY_LEFT
-        if self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_RIGHT):
+        if self.readKeyButton(self.RPiSparkConfig.BUTTON_JOY_RIGHT):
             return self.RPiSparkConfig.BUTTON_JOY_RIGHT
-        if self._readKeyButton(self.RPiSparkConfig.BUTTON_JOY_OK):
+        if self.readKeyButton(self.RPiSparkConfig.BUTTON_JOY_OK):
             return self.RPiSparkConfig.BUTTON_JOY_OK
 
         return False
 
-    def _keyButtonDown(self, channel):
+    def onKeyButtonDown(self, channel):
         """!
         \~english
-        Key down event, inherited and processed
+        Key button down event, inherited and processed
         @param channel: key button ID
         @attention * Do not do time-consuming operations in this function
 
@@ -161,7 +162,7 @@ class RPiSparkModule:
 
         \~
         <pre>
-        def _keyButtonDown(self, channel):
+        def onKeyButtonDown(self, channel):
             if channel == self.RPiSparkConfig.BUTTON_ACT_A:
                self._actStatus = 2
                return \n
@@ -172,10 +173,10 @@ class RPiSparkModule:
         """
         pass
 
-    def _keyButtonUp(self, channel):
+    def onKeyButtonUp(self, channel):
         """!
         \~english
-        Key release event, inherited and processed
+        Key button release event, inherited and processed
         @param channel: key button ID
         @attention * Do not do time-consuming operations in this function
 
@@ -190,7 +191,7 @@ class RPiSparkModule:
 
         \~
         <pre>
-        def _keyButtonUp(self, channel):
+        def onKeyButtonUp(self, channel):
             if channel == self.RPiSparkConfig.BUTTON_ACT_A:
                self._actStatus = 2
                return \n
@@ -207,33 +208,33 @@ class RPiSparkModule:
         Key buttons interrupt event callback function.
         @note Basic processing has been implemented and it is not recommended to 
         inherit and rewrite this method. Please inherit the 
-        RPiSparkModule#_keyButtonDown and 
-        RPiSparkModule#_keyButtonUp to implement your want
-        
+        RPiSparkModule#onKeyButtonDown and 
+        RPiSparkModule#onKeyButtonUp to implement your want
+
         \~chinese
         按键中断事件回调功能。
         @note 基本处理已经实现，不建议继承并重写该方法。 
-        请继承 RPiSparkModule#_keyButtonDown 和 RPiSparkModule#_keyButtonUp 
+        请继承 RPiSparkModule#onKeyButtonDown 和 RPiSparkModule#onKeyButtonUp 
         实现你想要处理的按键操作
         """
         if self.RPiSpark.Keyboard.readKeyButton(channel) == 0:
-            self._keyButtonDown(channel)
+            self.onKeyButtonDown(channel)
             return
 
         if self.RPiSpark.Keyboard.readKeyButton(channel) == 1:
-            self._keyButtonUp(channel)
+            self.onKeyButtonUp(channel)
             return
 
-    def _initKeyButtons(self, mode = "INT"):
+    def initKeyButtons(self, mode = "INT"):
         """!
         \~english
         Initialize all key buttons interrupt events or query mode. 
-        Inherit the _keyButtonDown and _keyButtonUp to implement your want
+        Inherit the onKeyButtonDown and onKeyButtonUp to implement your want
         @param mode: key button init mode, it can be: { "INT" | "QUERY" }, default is "INT"
         
         \~chinese
         初始化全部按键，可以设定为中断模式或查询模式
-        子类继承 _keyButtonDown 和 _keyButtonUp 实现按键中断模式下的操作
+        子类继承 onKeyButtonDown 和 onKeyButtonUp 实现按键中断模式下的操作
         @param mode: 按键模式, 取值： "INT" 或 "QUERY", 默认： "INT"
         """
         if mode.upper() == "INT":
@@ -263,7 +264,7 @@ class RPiSparkModule:
                 {"id":self.RPiSparkConfig.BUTTON_JOY_RIGHT, "callback":None}
             ])
 
-    def _releaseKeyButtons(self):
+    def releaseKeyButtons(self):
         """!
         \~english
         Release all events of key buttons
@@ -281,7 +282,81 @@ class RPiSparkModule:
             self.RPiSparkConfig.BUTTON_JOY_OK
         ])
 
-    def _beepTone(self, note = None, delay = 0.02, muteDelay = 0.05, tonePlayer = None):
+    def onDeviceShake(self, channel):
+        """
+        \~english
+        Device shake detect event
+        @attention * Do not do time-consuming operations in this function
+
+        Example:
+        
+        \~chinese
+        设备摇晃检测事件
+        @attention * 不要在此函数中做耗时的操作
+
+        示例代码：
+
+        \~
+        <pre>
+        def onDeviceShake(self, channel):
+            self._shakeCount += 1
+            print("\n--- SHAKED DEVICE: {} ---\n".format(self._shakeCount))
+        </pre>
+        """
+        pass
+
+    def enableShakeDetect(self):
+        """
+        \~english
+        Enable device shake detect
+
+        @return Boolean
+            True: shake detect enabled
+            False: shake detect false
+
+        \~chinese
+        开启设备摇晃检测
+
+        @return Boolean
+            True：摇晃检测开启成功
+            False：摇晃检测开启失败
+        """
+        if self.RPiSpark.Attitude != None:
+            # Init shake check INT -- default GPIO 25 ( BCM )
+            GPIO.setup( self.RPiSparkConfig.ATTITUDE_INT, GPIO.IN, pull_up_down=GPIO.PUD_UP )
+            GPIO.add_event_detect( self.RPiSparkConfig.ATTITUDE_INT, GPIO.RISING, callback=self.onDeviceShake, bouncetime=20 )
+            # enable motion check int
+            self.RPiSpark.Attitude.setMotionInt()
+            return True
+        else:
+            return False
+
+    def disableShakeDetect(self):
+        """
+        \~english
+        Disabled device shake detect
+        
+        @return Boolean
+            True: shake detect disabled
+            False: shake detect can not disable or failed
+
+        \~chinese
+        关闭设备摇晃检测
+        
+        @return Boolean
+            True：摇晃检测关闭成功
+            False：摇晃检测关闭失败
+        """
+        if self.RPiSpark.Attitude != None:
+            # remove attitude int event
+            GPIO.remove_event_detect( self.RPiSparkConfig.ATTITUDE_INT )
+            # disabled motion check int
+            self.RPiSpark.Attitude.disableInt()
+            return True
+        else:
+            return False
+
+    def beepTone(self, note = None, delay = 0.02, muteDelay = 0.05, tonePlayer = None):
         """!
         \~english
         Play an beep tone
@@ -318,8 +393,8 @@ class RPiSparkModule:
             except:
                 print("Beep error")
 
-    def _beep(self, tonePlayer = None):
-        self._beepTone( note = 3 , delay = 0.02, muteDelay = 0.02, tonePlayer = tonePlayer )
+    def beep(self, tonePlayer = None):
+        self.beepTone( note = 3 , delay = 0.02, muteDelay = 0.02, tonePlayer = tonePlayer )
 
     def setup(self):
         """!

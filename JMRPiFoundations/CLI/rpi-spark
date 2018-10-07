@@ -4,13 +4,14 @@
 #
 # Author: Kunpeng Zhang
 # 2018.6.13
+# 2018.9.11 fixed some bugs
 #
 # See LICENSE for details.
 __author__ = "Kunpeng Zhang"
 __copyright__ = "Copyright 2018, The RPi Spark Project"
 __credits__ = [""]
 __license__ = "MIT"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __maintainer__ = "Kunpeng Zhang"
 __email__ = "support@mobinrg.net"
 __status__ = "Production"
@@ -41,8 +42,8 @@ DEF_FONT = ImageFont.load_default()
 # --get_accel
 # --get_gyro
 # --get_temp
-# --get_key=btn_name1,btn_name2
-#     {act_a | act_b | joy_up | joy_down | joy_left | joy_right | joy_center }
+# --get_btn=btn_name1,btn_name2
+#     {act_a | act_b | joy_up | joy_down | joy_left | joy_right | joy_ok }
 # 
 # 
 # --draw
@@ -92,7 +93,7 @@ class Params:
         print(item_str % {"arg":"get_accel", "desc":"Read accelerometer data from RPi Spark"})
         print(item_str % {"arg":"get_gyro", "desc":"Read gyroscope data from RPi Spark"})
         print(item_str % {"arg":"get_temp", "desc":"Read temperature data from RPi Spark"})
-        print(item_str % {"arg":"get_btn", "desc":"Read key button(s) status from RPi Spark. \n\t\t\t\tvalue can be: [ act_a | act_b | joy_up | joy_down | joy_left | joy_right | joy_center ].\n\t\t\t\teg. --get_btn=act_a,act_b,joy_up (read 3 keys status) or --get_btn=act_b (just only read act_b status)"})
+        print(item_str % {"arg":"get_btn", "desc":"Read button(s) status from RPi Spark. \n\t\t\t\tvalue can be: [ act_a | act_b | joy_up | joy_down | joy_left | joy_right | joy_ok ].\n\t\t\t\teg. --get_btn=act_a,act_b,joy_up (read 3 keys status) or --get_btn=act_b (just only read act_b status)"})
 
         print("")
         print("* Others")
@@ -105,23 +106,30 @@ class Params:
         print(item_str_short % {"short_arg":"h", "arg":"help", "desc": "show help"})
 
         print("")
-        print("* Eamples")
-        print("    $>rpi_spark --draw --set_shape=text --set_text=\"Hello World!\" --set_xy=10,10 --set_font_name=FreeSans.ttf --set_font_size=14")
-        print("        Draw \"Hello World!\" at position (10,10) and use font FreeSans.ttf and size 12\n")
-        print("    $>rpi_spark --draw --set_shape=line --set_xy=10,10,20,40 --set_width=2 --set_outline=1")
-        print("        Draw a white line from (10,10) to (20,40) and width 2pix\n")
-        print("    $>rpi_spark --draw --set_shape=rect --set_xy=10,10,20,40 --set_fill=1 --set_outline=1")
-        print("        Draw a rect that length and width of 10pix and 30pix at position (10,10)\n")
-        print("    $>rpi_spark --draw --set_shape=circle --set_xy=32,32 --set_radius=10 --set_fill=1 --set_outline=1")
-        print("        Draw a circle at position (32,32) that radius is 10pixs and fill white color and let it's outline is white color\n")
-        print("    $>rpi_spark --draw --set_shape=arc --set_xy=10,10,20,40 --set_arc=0,180 --set_fill=1")
-        print("        Draw a arc from (10,10) to (20,40)\n")
-        print("    $>rpi_spark --get_accel --get_gyro --get_temp")
-        print("        Read data from RPi Spark\n")
-        print("    $>rpi_spark --dsp_power=off")
-        print("        Trun off screen\n")
-        print("    $>rpi_spark --dsp_clear")
-        print("        Clear screen\n")
+        print("* Examples\n")
+        print("  Draw \"Hello World!\" at position (10,10) and use font FreeSans.ttf and size 12")
+        print("    $>rpi-spark --draw --set_shape=text --set_text=\"Hello World!\" --set_xy=10,10 --set_font_name=FreeSans.ttf --set_font_size=14 --set_fill=1\n")
+        
+        print("  Draw a white line from (10,10) to (20,40) and width 2pix")
+        print("    $>rpi-spark --draw --set_shape=line --set_xy=10,10,20,40 --set_width=2 --set_outline=1\n")
+        
+        print("  Draw a rect that length and width of 10pix and 30pix at position (10,10)")
+        print("    $>rpi-spark --draw --set_shape=rect --set_xy=10,10,20,40 --set_fill=1 --set_outline=1\n")
+        
+        print("  Draw a circle at position (32,32) that radius is 10pixs and fill white color and let it's outline is white color")
+        print("    $>rpi-spark --draw --set_shape=circle --set_xy=32,32 --set_radius=10 --set_fill=1 --set_outline=1\n")
+        
+        print("  Draw a arc from (10,10) to (20,40)")
+        print("    $>rpi-spark --draw --set_shape=arc --set_xy=10,10,20,40 --set_arc=0,180 --set_fill=1\n")
+        
+        print("  Read data from RPi Spark")
+        print("    $>rpi-spark --get_accel --get_gyro --get_temp --get_btn=act_a,joy_up\n")
+        
+        print("  Trun off screen")
+        print("    $>rpi-spark --dsp_power=off\n")
+        
+        print("  Clear screen")
+        print("    $>rpi-spark --dsp_clear\n")
         print("")
 
 
@@ -143,7 +151,7 @@ class Params:
                       "get_accel",
                       "get_gyro",
                       "get_temp",
-                      "get_key=",
+                      "get_btn=",
 
                       "dsp_power=",
                       "dsp_clear",
@@ -187,12 +195,12 @@ class Params:
                 for index, xy_v in enumerate(xy):
                     self.setDrawCmd( key=xy_t[index], value=float(xy_v) )
             elif opt in ("--set_radius"):
-                self.setDrawCmd( key="r", value=arg )
+                self.setDrawCmd( key="r", value=float(arg) )
             elif opt in ("--set_arc"):
                 se = arg.split(",")
                 if len(se) == 2:
-                    self.setDrawCmd( key="s", value=float(se[0]) )
-                    self.setDrawCmd( key="e", value=float(se[1]) )
+                    self.setDrawCmd( key="start", value=float(se[0]) )
+                    self.setDrawCmd( key="end", value=float(se[1]) )
                 else:
                     print("Input error ( start[0-360], end [0-36]. example: 10, 34)")
 
@@ -208,19 +216,22 @@ class Params:
             elif opt in ("--get_temp"):
                 self._cmdList.append({"cmd":"data", "params":{"data":"temp"} })
                 
-            elif opt in ("--get_key"):
-                self._cmdList.append({"cmd":"data", "params":{"data":"key", "keys": arg.split(",") } })
+            elif opt in ("--get_btn"):
+                self._cmdList.append({"cmd":"data", "params":{"data":"btn", "btns": arg.split(",") } })
 
             ###########################
             # 设备动作 
             #
             elif opt in ("--dsp_clear"):
                 self._cmdList.append( {"cmd":"device", "params":{"device":"dsp", "act":"clear"} } )
+                
+            elif opt in ("--dsp_refresh"):
+                self._cmdList.append( {"cmd":"device", "params":{"device":"dsp", "act":"refresh"} } )
 
             elif opt in ("--dsp_power"):
                 self._cmdList.append( {"cmd":"device", "params":{"device":"dsp", "act":arg} } )
 
-            elif opt in ("--ot"):                
+            elif opt in ("--ot"):
                 self.cmdParams["ot"] = arg
 
         if self._cmdDraw != None:
@@ -248,6 +259,7 @@ class Params:
                 new_cmd_list = std_in_params.get("cmd_list", None)
                 if new_cmd_list != None:
                     self._cmdList.extend(new_cmd_list)
+                    self.cmdParams["it"] = "stdin"
             except:
                 print("Stdin data error")
 
@@ -279,7 +291,7 @@ class CLISpark(RPiSparkModule):
         if style == 2:
             return (pDict.get("x", pDict.get("x1", 0)), 
                     pDict.get("y", pDict.get("y1", 0)))
-        
+
         if style == 4:
             return ( pDict.get("x1", 1), pDict.get("y1", 1), pDict.get("x2", 1), pDict.get("y2", 1) )
 
@@ -297,14 +309,14 @@ class CLISpark(RPiSparkModule):
         shape = pDict.get("shape", None)
         if shape == None: return
         xy4 = self._getXY(pDict, 4)
-        fill = pDict.get("fill", None)
         outline = pDict.get("outline", None)
+        fill = pDict.get("fill", 1)
         width = pDict.get("width", 1)
 
         if shape == "line":
             self.screen.Canvas.line( xy4, fill, width )
             return
-        
+
         if shape == "rect":
             self.screen.Canvas.rectangle( xy4, fill, outline )
             return
@@ -312,7 +324,7 @@ class CLISpark(RPiSparkModule):
         if shape == "ellipse":
             self.screen.Canvas.ellipse( xy4, fill, outline )
             return
-        
+
         if shape == "arc":
             s = pDict.get("start", 0)
             e = pDict.get("end", 360)
@@ -380,7 +392,7 @@ class CLISpark(RPiSparkModule):
     def _readData(self, pDict):
         """
             pDict: { data: "accel"  }
-                data -- { "accel" | "gyro" | "temp" | "key" }
+                data -- { "accel" | "gyro" | "temp" | "btn" }
         """
 
         dataType = pDict.get("data", None)
@@ -389,8 +401,8 @@ class CLISpark(RPiSparkModule):
         if dataType == "accel": return self.attitude.getAccelData()
         if dataType == "gyro": return self.attitude.getAccelData()
         if dataType == "temp": return self.attitude.getTemp()
-        if dataType == "key":
-            keys = pDict.get("keys")
+        if dataType == "btn":
+            keys = pDict.get("btns")
             key_st = {}
             for keyName in keys:
                 key_st[keyName] = self.keyboard.readKeyButton( self._getBtnIDFromName(keyName) )
@@ -415,7 +427,7 @@ class CLISpark(RPiSparkModule):
         if btnName.upper() == "JOY_RIGHT":
             return self.RPiSparkConfig.BUTTON_JOY_RIGHT
 
-        if btnName.upper() == "JOY_CENTER":
+        if btnName.upper() == "JOY_OK":
             return self.RPiSparkConfig.BUTTON_JOY_OK
 
     def _executCMD(self, cmdList):
@@ -474,7 +486,7 @@ class CLISpark(RPiSparkModule):
                        "temp":tempData
                     } )
 
-        keyData = data.get("key", None)
+        keyData = data.get("btn", None)
         if keyData != None:
             for (key, keyST) in keyData.items():
                 print(" %(key)s\t\t| %(st)s" % { "key":key , "st":keyST })
@@ -490,7 +502,7 @@ class CLISpark(RPiSparkModule):
         self.attitude = self.RPiSpark.Attitude
         self.keyboard = self.RPiSpark.Keyboard
         self._last_font = DEF_FONT
-        self._initKeyButtons( mode = "QUERY" )
+        self.initKeyButtons( mode = "QUERY" )
         
         #self._attitudePower( "ON" )
         self._deviceAction({"device":"attitude", "act":"on"})
@@ -499,7 +511,6 @@ class CLISpark(RPiSparkModule):
     def run(self):
         if self.cmdParams != None:
             resultData = self._executCMD( self.cmdParams.get("cmd_list", None) )
-
             outputType = self.cmdParams.get("ot", "normal").upper()
             if outputType == "NORMAL":
                 self._outputTabData(resultData)
@@ -507,7 +518,7 @@ class CLISpark(RPiSparkModule):
                 print(json.dumps(resultData))
 
         self.screen.refresh()
-        self._releaseKeyButtons()
+        self.releaseKeyButtons()
 
 def main(argv):
     myParams = Params(argv)
