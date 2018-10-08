@@ -58,11 +58,11 @@ def initSpark():
         pass
 
     try:
-	myMPU6050 = MPU6050( RPiSparkConfig.ATTITUDE_SENSOR_ADDR )
+        myMPU6050 = MPU6050( RPiSparkConfig.ATTITUDE_SENSOR_ADDR )
     except:
-	myMPU6050 = None
-	print("Warning: We can not find attitude sensor, please check your RPi-Spark pHAT")
-	pass
+        myMPU6050 = None
+        print("Warning: We can not find attitude sensor, please check your RPi-Spark pHAT")
+        pass
 
     # return RPiSpark
     return RPiSpark(
