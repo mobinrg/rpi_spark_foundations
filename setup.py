@@ -36,14 +36,14 @@ keywords = (
 	"Raspberry Pi"
 )
 
-desc = "The Raspberry Pi Spark pHat board let you to easily develop interesting applications use the GPIO of Raspberry Pi. It included SSD1306 128x64 OLED, MPU6050 Sensor (Gyroscope, Accelerometer, Thermometer Sensor), 5 ways joystick, 2 action keys, 3.5mm stereo headphone jack, Speaker and 20 extended GPIO pads"
+desc = "The Raspberry Pi Spark pHat board let you to easily develop interesting applications use the GPIO of Raspberry Pi. It included SSD1306 128x64 OLED, MPU6050 Sensor (Gyroscope, Accelerometer, Thermometer Sensor), 5 ways joystick, 2 action keys, 3.5mm stereo headphone jack, Speaker and 19 extended GPIO pads"
 
 pagekages = find_packages()
 pagekages.append("JMRPiFoundations.CLI")
 
 setup (
 	name				= 'JMRPi.Spark.Foundations',
-	version				= '1.0.6',
+	version				= '1.0.7',
 	author				= 'Kunpeng Zhang',
 	author_email		= 'support@mobinrg.com',
 	description			= desc,
@@ -58,7 +58,7 @@ setup (
 	packages			= pagekages,
 	scripts				= [ 'JMRPiFoundations/CLI/rpi-spark', 
 							'JMRPiFoundations/CLI/rspk',
-							'JMRPiFoundations/CLI/rpi-spark3'
+							'JMRPiFoundations/CLI/rpi-spark3',
 							'JMRPiFoundations/CLI/rspk3'
 							]
 )
