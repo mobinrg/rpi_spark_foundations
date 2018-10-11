@@ -54,7 +54,7 @@ class Params:
         # print("* a_spark_module_name")
 
         print("")
-        print("* Eamples")
+        print("* Examples")
         print("    $>rspk helloworld.py")
         print("        Run the Spark module named 'helloworld' in helloworld.py\n")
         print("    $>rspk HelloWorld")

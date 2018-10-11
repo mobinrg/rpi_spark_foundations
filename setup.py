@@ -36,7 +36,7 @@ keywords = (
 	"Raspberry Pi"
 )
 
-desc = "The Raspberry Pi Spark pHat board let you to easily develop interesting applications use the GPIO of Raspberry Pi. It included SSD1306 128x64 OLED, MPU6050 Sensor (Gyroscope, Accelerometer, Thermometer Sensor), 5 ways joystick, 2 action keys, 3.5mm stereo headphone jack, Speaker and 19 extended GPIO pads"
+desc = "The RPi-Spark pHat let you to easily develop interesting applications use the GPIO of Raspberry Pi. It included SSD1306 128x64 OLED, MPU6050 Sensor (Gyroscope, Accelerometer, Thermometer Sensor), 5 ways joystick, 2 push buttons, 3.5mm stereo headphone jack, Speaker and 19 extended GPIO pads"
 
 pagekages = find_packages()
 pagekages.append("JMRPiFoundations.CLI")
